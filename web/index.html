@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lichess PDF Maker</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f6f1;
+        --panel: #ffffff;
+        --ink: #1f2933;
+        --muted: #66727f;
+        --line: #d8ddd6;
+        --accent: #2f6f5e;
+        --accent-2: #8a4b35;
+        --danger: #9b2c2c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Arial, "Malgun Gothic", sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      main {
+        margin: 0 auto;
+        max-width: 1180px;
+        padding: 28px;
+      }
+
+      header {
+        align-items: end;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        gap: 18px;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        padding-bottom: 16px;
+      }
+
+      h1 {
+        font-size: 28px;
+        line-height: 1.1;
+        margin: 0;
+      }
+
+      .header-note {
+        color: var(--muted);
+        max-width: 520px;
+        text-align: right;
+      }
+
+      .layout {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: minmax(0, 1fr) 340px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      label {
+        color: var(--muted);
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      input,
+      select {
+        background: #fff;
+        border: 1px solid #c8d0c9;
+        border-radius: 6px;
+        color: var(--ink);
+        font: inherit;
+        height: 40px;
+        padding: 8px 10px;
+        width: 100%;
+      }
+
+      .theme-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .theme-chip {
+        background: #eef2ee;
+        border: 1px solid #cbd6ce;
+        border-radius: 6px;
+        color: #243b35;
+        cursor: pointer;
+        font: inherit;
+        min-height: 34px;
+        padding: 6px 10px;
+      }
+
+      .theme-chip.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      .actions {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .primary {
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        min-height: 42px;
+        padding: 8px 16px;
+      }
+
+      .secondary {
+        background: #fff;
+        border: 1px solid #b9c5bc;
+        border-radius: 6px;
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        min-height: 42px;
+        padding: 8px 14px;
+      }
+
+      .primary:disabled,
+      .secondary:disabled {
+        cursor: wait;
+        opacity: 0.65;
+      }
+
+      .status {
+        border-left: 4px solid var(--accent);
+        margin-top: 16px;
+        padding: 8px 12px;
+      }
+
+      .status.error {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      .result-links {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      a {
+        color: #1d5f90;
+        font-weight: 700;
+      }
+
+      .file-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .file-item {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 9px;
+      }
+
+      .file-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .empty {
+        color: var(--accent-2);
+      }
+
+      .checkbox-row {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .checkbox-row input {
+        height: 18px;
+        width: 18px;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          padding: 18px;
+        }
+
+        header,
+        .layout {
+          display: block;
+        }
+
+        .header-note {
+          margin-top: 8px;
+          text-align: left;
+        }
+
+        .panel {
+          margin-bottom: 16px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Lichess PDF Maker</h1>
+          <div class="muted">로컬 CSV에서 퍼즐을 고르고 인쇄용 PDF를 만듭니다.</div>
+        </div>
+        <div class="header-note">PDF 생성은 이 PC의 Python 서버가 처리합니다.</div>
+      </header>
+
+      <div class="layout">
+        <section class="panel">
+          <div class="section-title">퍼즐 조건</div>
+
+          <div class="grid">
+            <div>
+              <label for="inputFile">데이터 파일</label>
+              <select id="inputFile"></select>
+            </div>
+            <div>
+              <label for="title">PDF 제목</label>
+              <input id="title" value="Lichess Puzzle Set">
+            </div>
+            <div>
+              <label for="layout">양식</label>
+              <select id="layout">
+                <option value="print-minimal" selected>인쇄용 미니멀</option>
+                <option value="standard">기본 상세</option>
+                <option value="instagram">인스타그램 정사각형</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="height: 16px"></div>
+          <label>테마</label>
+          <div id="themeGrid" class="theme-grid"></div>
+
+          <div class="grid">
+            <div>
+              <label for="customTheme">직접 입력한 테마</label>
+              <input id="customTheme" placeholder="예: fork, mateIn2">
+            </div>
+            <div>
+              <label for="match">여러 테마 조건</label>
+              <select id="match">
+                <option value="any">하나라도 맞으면 포함</option>
+                <option value="all">모든 테마가 맞아야 포함</option>
+              </select>
+            </div>
+            <div>
+              <label for="minRating">최소 레이팅</label>
+              <input id="minRating" type="number" placeholder="1200">
+            </div>
+            <div>
+              <label for="maxRating">최대 레이팅</label>
+              <input id="maxRating" type="number" placeholder="1800">
+            </div>
+            <div>
+              <label for="minPopularity">최소 인기도</label>
+              <input id="minPopularity" type="number" value="80">
+            </div>
+            <div>
+              <label for="count">문제 수</label>
+              <input id="count" type="number" value="10" min="1" max="200">
+            </div>
+            <div>
+              <label for="seed">랜덤 seed</label>
+              <input id="seed" type="number" value="42">
+            </div>
+          </div>
+
+          <label class="checkbox-row">
+            <input id="htmlOnly" type="checkbox">
+            HTML만 만들기
+          </label>
+
+          <label class="checkbox-row">
+            <input id="solutionsAtEnd" type="checkbox" checked>
+            해답을 맨 뒤에 모으기
+          </label>
+
+          <label class="checkbox-row">
+            <input id="splitOutput" type="checkbox" checked>
+            문제지와 정답지 따로 만들기
+          </label>
+
+          <div class="actions">
+            <button id="generate" class="primary">PDF 만들기</button>
+            <button id="refresh" class="secondary">목록 새로고침</button>
+          </div>
+
+          <div id="status" class="status muted">준비 중...</div>
+          <div id="resultLinks" class="result-links"></div>
+        </section>
+
+        <aside class="panel">
+          <div class="section-title">최근 생성 파일</div>
+          <div id="outputList" class="file-list"></div>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      const state = {
+        selectedThemes: new Set(["fork"]),
+        themePresets: [],
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function formatSize(bytes) {
+        if (!bytes) return "0 B";
+        if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+      }
+
+      function setStatus(message, isError = false) {
+        const status = $("status");
+        status.textContent = message;
+        status.classList.toggle("error", isError);
+      }
+
+      function renderThemes() {
+        const grid = $("themeGrid");
+        grid.innerHTML = "";
+        state.themePresets.forEach((theme) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "theme-chip";
+          button.textContent = theme;
+          button.classList.toggle("active", state.selectedThemes.has(theme));
+          button.addEventListener("click", () => {
+            if (state.selectedThemes.has(theme)) {
+              state.selectedThemes.delete(theme);
+            } else {
+              state.selectedThemes.add(theme);
+            }
+            renderThemes();
+          });
+          grid.appendChild(button);
+        });
+      }
+
+      function renderFiles(files) {
+        const select = $("inputFile");
+        select.innerHTML = "";
+        if (!files.length) {
+          const option = document.createElement("option");
+          option.textContent = "data 폴더에 CSV 파일이 없습니다";
+          option.value = "";
+          select.appendChild(option);
+          return;
+        }
+        files.forEach((file) => {
+          const option = document.createElement("option");
+          option.value = file.name;
+          option.textContent = `${file.name} (${formatSize(file.size)})`;
+          select.appendChild(option);
+        });
+      }
+
+      function renderOutputs(files) {
+        const list = $("outputList");
+        list.innerHTML = "";
+        if (!files.length) {
+          list.innerHTML = "<div class=\"empty\">아직 생성된 파일이 없습니다.</div>";
+          return;
+        }
+        files.forEach((file) => {
+          const item = document.createElement("div");
+          item.className = "file-item";
+          item.innerHTML = `
+            <a href="${file.url}" target="_blank" rel="noreferrer">${file.name}</a>
+            <div class="muted">${formatSize(file.size)}</div>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      async function refresh() {
+        const response = await fetch("/api/status");
+        const data = await response.json();
+        state.themePresets = data.themePresets || [];
+        renderThemes();
+        renderFiles(data.dataFiles || []);
+        renderOutputs(data.outputFiles || []);
+        setStatus("조건을 고르고 PDF 만들기를 누르면 됩니다.");
+      }
+
+      function numberOrEmpty(id) {
+        const value = $(id).value.trim();
+        return value === "" ? "" : Number(value);
+      }
+
+      async function generatePdf() {
+        const button = $("generate");
+        const resultLinks = $("resultLinks");
+        resultLinks.innerHTML = "";
+        button.disabled = true;
+        setStatus("퍼즐을 고르고 PDF를 만드는 중입니다...");
+
+        const payload = {
+          input: $("inputFile").value,
+          title: $("title").value,
+          layout: $("layout").value,
+          themes: Array.from(state.selectedThemes),
+          customTheme: $("customTheme").value,
+          match: $("match").value,
+          minRating: numberOrEmpty("minRating"),
+          maxRating: numberOrEmpty("maxRating"),
+          minPopularity: numberOrEmpty("minPopularity"),
+          count: numberOrEmpty("count"),
+          seed: numberOrEmpty("seed"),
+          htmlOnly: $("htmlOnly").checked,
+          solutionsAtEnd: $("solutionsAtEnd").checked,
+          splitOutput: $("splitOutput").checked,
+        };
+
+        try {
+          const response = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+          if (!data.ok) throw new Error(data.error || "PDF 생성에 실패했습니다.");
+
+          setStatus(`${data.count}문제를 생성했습니다.`);
+          if (data.questionsPdfUrl && data.answersPdfUrl) {
+            resultLinks.innerHTML += `<a href="${data.questionsPdfUrl}" target="_blank" rel="noreferrer">문제지 PDF 열기</a>`;
+            resultLinks.innerHTML += `<a href="${data.answersPdfUrl}" target="_blank" rel="noreferrer">정답지 PDF 열기</a>`;
+          } else if (data.pdfUrl) {
+            resultLinks.innerHTML += `<a href="${data.pdfUrl}" target="_blank" rel="noreferrer">PDF 열기</a>`;
+          }
+          if (data.questionsHtmlUrl && data.answersHtmlUrl) {
+            resultLinks.innerHTML += `<a href="${data.questionsHtmlUrl}" target="_blank" rel="noreferrer">문제지 HTML 열기</a>`;
+            resultLinks.innerHTML += `<a href="${data.answersHtmlUrl}" target="_blank" rel="noreferrer">정답지 HTML 열기</a>`;
+          } else if (data.htmlUrl) {
+            resultLinks.innerHTML += `<a href="${data.htmlUrl}" target="_blank" rel="noreferrer">HTML 열기</a>`;
+          }
+          renderOutputs(data.outputFiles || []);
+        } catch (error) {
+          setStatus(error.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      $("generate").addEventListener("click", generatePdf);
+      $("refresh").addEventListener("click", refresh);
+      refresh();
+    </script>
+  </body>
+</html>

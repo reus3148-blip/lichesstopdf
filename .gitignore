@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+output/
+data/*.csv.zst
+data/lichess_db_puzzle.csv
