@@ -703,6 +703,9 @@
       }
 
       function solutionMoves(puzzle) {
+        if (Array.isArray(puzzle.san) && puzzle.san.length) {
+          return puzzle.san.join(" ");
+        }
         const moves = puzzle.moves.split(" ");
         return moves.slice(1).map(moveText).join(" ");
       }

@@ -24,6 +24,7 @@ import random
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
+import chess
 import psycopg
 
 
@@ -80,6 +81,27 @@ def opening_name(opening_tags: list[str]) -> str:
     return opening_tags[0].replace("_", " ")
 
 
+def solution_san(fen: str, moves: str) -> list[str] | None:
+    """Standard algebraic notation for the solution moves.
+
+    The first UCI move is the opponent's setup move and is not part of the
+    solution, so it is played to advance the board but excluded from output.
+    Returns None on any parsing failure so the client can fall back to UCI.
+    """
+    try:
+        board = chess.Board(fen)
+        san_moves: list[str] = []
+        for index, uci in enumerate(moves.split()):
+            move = chess.Move.from_uci(uci)
+            san = board.san(move)
+            board.push(move)
+            if index >= 1:
+                san_moves.append(san)
+        return san_moves
+    except Exception:  # noqa: BLE001 - fall back to UCI on any bad data
+        return None
+
+
 def query_puzzles(filters: dict) -> list[dict]:
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
@@ -134,6 +156,7 @@ def query_puzzles(filters: dict) -> list[dict]:
                 "themes": list(themes),
                 "gameUrl": game_url,
                 "opening": opening_name(list(opening_tags)),
+                "san": solution_san(fen, moves),
             }
         )
     return puzzles
