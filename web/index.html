@@ -315,6 +315,12 @@
         box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65);
       }
 
+      .piece {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+
       .puzzle-copy {
         display: grid;
         gap: 8px;
@@ -464,6 +470,15 @@
               </select>
             </div>
             <div class="field">
+              <label for="pieceSet">기물 세트</label>
+              <select id="pieceSet">
+                <option value="cburnett">cburnett</option>
+                <option value="merida">merida</option>
+                <option value="alpha">alpha</option>
+                <option value="staunty">staunty</option>
+              </select>
+            </div>
+            <div class="field">
               <label for="matchMode">테마 조건</label>
               <select id="matchMode">
                 <option value="any">하나 이상</option>
@@ -558,20 +573,14 @@
         "veryLong"
       ];
 
-      const PIECES = {
-        K: "♔",
-        Q: "♕",
-        R: "♖",
-        B: "♗",
-        N: "♘",
-        P: "♙",
-        k: "♚",
-        q: "♛",
-        r: "♜",
-        b: "♝",
-        n: "♞",
-        p: "♟"
-      };
+      function pieceCode(char) {
+        if (!char) return "";
+        return (char === char.toUpperCase() ? "w" : "b") + char.toUpperCase();
+      }
+
+      function currentPieceSet() {
+        return $("pieceSet").value;
+      }
 
       const selectedThemes = new Set(["fork"]);
       const $ = (id) => document.getElementById(id);
@@ -666,13 +675,15 @@
         const flipped = position.turn === "b";
         const rows = flipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
         const cols = flipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
+        const set = currentPieceSet();
         let html = '<div class="board" role="img" aria-label="Chess board">';
 
         rows.forEach((row) => {
           cols.forEach((col) => {
             const tone = (row + col) % 2 === 0 ? "light" : "dark";
             const isLast = (row === from.row && col === from.col) || (row === to.row && col === to.col);
-            const piece = PIECES[position.board[row][col]] || "";
+            const code = pieceCode(position.board[row][col]);
+            const piece = code ? `<img class="piece" src="pieces/${set}/${code}.svg" alt="">` : "";
             html += `<div class="square ${tone}${isLast ? " last" : ""}">${piece}</div>`;
           });
         });
@@ -804,6 +815,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
+  <base href="${location.origin}/">
   <title>${title}</title>
   <style>
     @page { size: A4; margin: 14mm; }
@@ -831,19 +843,16 @@
       width: 100%;
     }
     .print-card .board { max-width: 320px; }
-    .square {
-      align-items: center; display: flex; justify-content: center;
-      font-family: "Segoe UI Symbol", "Arial Unicode MS", serif;
-      font-size: 24px; line-height: 1;
-    }
+    .square { align-items: center; display: flex; justify-content: center; }
     .square.light { background: #f0d9b5; }
     .square.dark { background: #b58863; }
     .square.last { box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65); }
+    .piece { display: block; height: 100%; width: 100%; }
     .answers { break-before: page; margin-top: 28px; }
     @media print { body { margin: 0; } }
   </style>
 </head>
-<body>${body}</body>
+<body>${body}<script>window.addEventListener("load",function(){window.print();});<\/script></body>
 </html>`;
       }
 
@@ -865,13 +874,13 @@
         win.document.write(printableHtml());
         win.document.close();
         win.focus();
-        setTimeout(() => win.print(), 350);
       }
 
       function resetFilters() {
         selectedThemes.clear();
         selectedThemes.add("fork");
         $("layout").value = "worksheet";
+        $("pieceSet").value = "cburnett";
         $("matchMode").value = "any";
         $("minRating").value = 1200;
         $("maxRating").value = 2800;
@@ -895,6 +904,8 @@
       ["matchMode", "minRating", "maxRating", "minPopularity", "count"].forEach((id) => {
         $(id).addEventListener("change", markStale);
       });
+
+      $("pieceSet").addEventListener("change", renderPreview);
 
       $("loadButton").addEventListener("click", loadPuzzles);
       $("printButton").addEventListener("click", openPrintable);
