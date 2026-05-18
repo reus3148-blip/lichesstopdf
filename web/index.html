@@ -437,8 +437,8 @@
           <h1>Printable Puzzle Studio</h1>
         </div>
         <p class="top-meta">
-          lab.blundermate.app 정적 MVP. 현재는 샘플 퍼즐로 인쇄용 HTML을 만들고,
-          PDF 백엔드와 전체 Lichess DB는 별도 단계에서 붙입니다.
+          lab.blundermate.app — Lichess 퍼즐 데이터베이스에서 조건에 맞는 퍼즐을
+          불러와 인쇄용 HTML을 만듭니다.
         </p>
       </header>
 
@@ -446,7 +446,7 @@
         <section class="surface" aria-labelledby="controls-title">
           <div class="section-title">
             <h2 id="controls-title">Sheet Builder</h2>
-            <span class="pill">sample CSV</span>
+            <span class="pill">Lichess DB</span>
           </div>
 
           <div class="field-grid">
@@ -498,19 +498,20 @@
           </div>
 
           <div class="actions">
-            <button id="printButton" class="primary" type="button">Printable HTML 열기</button>
+            <button id="loadButton" class="primary" type="button">퍼즐 불러오기</button>
+            <button id="printButton" class="secondary" type="button">Printable HTML 열기</button>
             <button id="downloadButton" class="secondary" type="button">HTML 다운로드</button>
             <button id="resetButton" class="secondary" type="button">초기화</button>
           </div>
 
-          <div id="status" class="status">샘플 데이터가 준비되었습니다.</div>
+          <div id="status" class="status">퍼즐을 불러오는 중...</div>
         </section>
 
         <section class="surface" aria-labelledby="preview-title">
           <div class="preview-head">
             <div>
               <h2 id="preview-title">Preview</h2>
-              <p class="muted">Lichess sample rows only</p>
+              <p class="muted">Lichess 퍼즐 데이터베이스</p>
             </div>
             <div id="previewCount" class="preview-count">0 puzzles</div>
           </div>
@@ -521,11 +522,11 @@
       <section class="lab-roadmap" aria-label="Lab feature shelf">
         <article class="feature">
           <h3>Puzzle sheet generator</h3>
-          <div class="feature-state state-live">Static demo live</div>
+          <div class="feature-state state-live">Lichess DB 연동</div>
         </article>
         <article class="feature">
           <h3>Answer sheet generator</h3>
-          <div class="feature-state state-live">Static demo live</div>
+          <div class="feature-state state-live">Lichess DB 연동</div>
         </article>
         <article class="feature">
           <h3>Instagram carousel export</h3>
@@ -543,38 +544,7 @@
     </main>
 
     <script>
-      const PUZZLES = [
-        {
-          id: "00sHx",
-          fen: "q3k1nr/1pp1nQpp/3p4/1P2p3/4P3/B1PP1b2/B5PP/5K2 b k - 0 17",
-          moves: "e8d7 a2e6 d7d8 f7f8",
-          rating: 1760,
-          popularity: 83,
-          themes: ["mate", "mateIn2", "middlegame", "short"],
-          gameUrl: "https://lichess.org/yyznGmXs/black#34",
-          opening: "Italian Game"
-        },
-        {
-          id: "00sJ9",
-          fen: "r3r1k1/p4ppp/2p2n2/1p6/3P1qb1/2NQR3/PPB2PP1/R1B3K1 w - - 5 18",
-          moves: "e3g3 e8e1 g1h2 e1c1 a1c1 f4h6 h2g1 h6c1",
-          rating: 2671,
-          popularity: 87,
-          themes: ["advantage", "attraction", "fork", "middlegame", "sacrifice", "veryLong"],
-          gameUrl: "https://lichess.org/gyFeQsOE#35",
-          opening: "French Defense"
-        },
-        {
-          id: "00sJb",
-          fen: "Q1b2r1k/p2np2p/5bp1/q7/5P2/4B3/PPP3PP/2KR1B1R w - - 1 17",
-          moves: "d1d7 a5e1 d7d1 e1e3 c1b1 e3b6",
-          rating: 2235,
-          popularity: 97,
-          themes: ["advantage", "fork", "long"],
-          gameUrl: "https://lichess.org/kiuvTFoE#33",
-          opening: "Sicilian Defense"
-        }
-      ];
+      let PUZZLES = [];
 
       const THEME_PRESETS = [
         "fork",
@@ -716,26 +686,47 @@
       }
 
       function currentPuzzles() {
-        const minRating = parseNumber("minRating", 0);
-        const maxRating = parseNumber("maxRating", 9999);
-        const minPopularity = parseNumber("minPopularity", 0);
-        const count = Math.max(1, Math.min(12, parseNumber("count", 3)));
-        const matchMode = $("matchMode").value;
-        const themes = Array.from(selectedThemes);
+        return PUZZLES;
+      }
 
-        return PUZZLES.filter((puzzle) => {
-          const themeMatch =
-            themes.length === 0 ||
-            (matchMode === "all"
-              ? themes.every((theme) => puzzle.themes.includes(theme))
-              : themes.some((theme) => puzzle.themes.includes(theme)));
-          return (
-            themeMatch &&
-            puzzle.rating >= minRating &&
-            puzzle.rating <= maxRating &&
-            puzzle.popularity >= minPopularity
-          );
-        }).slice(0, count);
+      function markStale() {
+        const status = $("status");
+        status.classList.remove("error");
+        status.textContent = "조건이 바뀌었습니다. '퍼즐 불러오기'를 다시 누르세요.";
+      }
+
+      async function loadPuzzles() {
+        const button = $("loadButton");
+        const status = $("status");
+        button.disabled = true;
+        status.classList.remove("error");
+        status.textContent = "퍼즐을 불러오는 중...";
+        try {
+          const body = {
+            themes: Array.from(selectedThemes),
+            match: $("matchMode").value,
+            minRating: parseNumber("minRating", 0),
+            maxRating: parseNumber("maxRating", 9999),
+            minPopularity: parseNumber("minPopularity", 0),
+            count: Math.max(1, Math.min(12, parseNumber("count", 3)))
+          };
+          const response = await fetch("/api/puzzles", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.error || `요청 실패 (${response.status})`);
+          }
+          PUZZLES = Array.isArray(data.puzzles) ? data.puzzles : [];
+          renderPreview();
+        } catch (error) {
+          status.textContent = `퍼즐을 불러오지 못했습니다: ${error.message}`;
+          status.classList.add("error");
+        } finally {
+          button.disabled = false;
+        }
       }
 
       function renderThemes() {
@@ -768,7 +759,7 @@
           status.textContent = "Printable HTML을 만들 수 있습니다.";
           status.classList.remove("error");
         } else {
-          status.textContent = "조건에 맞는 샘플 퍼즐이 없습니다.";
+          status.textContent = "조건에 맞는 퍼즐이 없습니다. 조건을 넓혀 보세요.";
           status.classList.add("error");
         }
       }
@@ -921,7 +912,7 @@
         $("count").value = 3;
         $("includeAnswers").checked = true;
         renderThemes();
-        renderPreview();
+        loadPuzzles();
       }
 
       $("themeGrid").addEventListener("click", (event) => {
@@ -931,20 +922,20 @@
         if (selectedThemes.has(theme)) selectedThemes.delete(theme);
         else selectedThemes.add(theme);
         renderThemes();
-        renderPreview();
+        markStale();
       });
 
-      ["layout", "matchMode", "minRating", "maxRating", "minPopularity", "count", "includeAnswers"].forEach((id) => {
-        $(id).addEventListener("input", renderPreview);
-        $(id).addEventListener("change", renderPreview);
+      ["matchMode", "minRating", "maxRating", "minPopularity", "count"].forEach((id) => {
+        $(id).addEventListener("change", markStale);
       });
 
+      $("loadButton").addEventListener("click", loadPuzzles);
       $("printButton").addEventListener("click", openPrintable);
       $("downloadButton").addEventListener("click", downloadPrintable);
       $("resetButton").addEventListener("click", resetFilters);
 
       renderThemes();
-      renderPreview();
+      loadPuzzles();
     </script>
   </body>
 </html>

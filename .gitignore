@@ -3,6 +3,8 @@
 __pycache__/
 *.pyc
 output/
+.env
+.env.*
 data/local_workspace*.csv
 data/*.csv.zst
 data/lichess_db_puzzle.csv
