@@ -818,7 +818,7 @@
   <base href="${location.origin}/">
   <title>${title}</title>
   <style>
-    @page { size: A4; margin: 14mm; }
+    @page { size: A4; margin: 0; }
     * { box-sizing: border-box; }
     html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body { color: #171f25; font-family: Arial, "Malgun Gothic", sans-serif; margin: 24px; }
@@ -849,7 +849,7 @@
     .square.last { box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65); }
     .piece { display: block; height: 100%; width: 100%; }
     .answers { break-before: page; margin-top: 28px; }
-    @media print { body { margin: 0; } }
+    @media print { body { margin: 14mm; } }
   </style>
 </head>
 <body>${body}<script>window.addEventListener("load",function(){window.print();});<\/script></body>
