@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BlunderMate Local Lab</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7f6;
+        --panel: #ffffff;
+        --ink: #172026;
+        --muted: #60717c;
+        --line: #d4dfdf;
+        --soft: #edf4f3;
+        --teal: #176b66;
+        --teal-dark: #0f514f;
+        --blue: #315f9f;
+        --red: #a23b37;
+        --gold: #9a6a16;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Arial, "Malgun Gothic", sans-serif;
+        font-size: 14px;
+        line-height: 1.45;
+        margin: 0;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        min-height: 40px;
+      }
+
+      a {
+        color: var(--blue);
+        font-weight: 700;
+      }
+
+      .shell {
+        margin: 0 auto;
+        max-width: 1380px;
+        padding: 22px;
+      }
+
+      .topbar {
+        align-items: end;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        gap: 20px;
+        justify-content: space-between;
+        padding-bottom: 16px;
+      }
+
+      .brand {
+        display: grid;
+        gap: 3px;
+      }
+
+      .brand-kicker {
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .endpoint {
+        color: var(--muted);
+        font-size: 13px;
+        text-align: right;
+      }
+
+      .layout {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 370px minmax(0, 1fr) 300px;
+        margin-top: 18px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+      }
+
+      .panel-title {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .panel-title h2 {
+        font-size: 16px;
+      }
+
+      .pill {
+        background: var(--soft);
+        border: 1px solid #c8dcda;
+        border-radius: 999px;
+        color: var(--teal-dark);
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 9px;
+      }
+
+      .field-grid {
+        display: grid;
+        gap: 11px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .field {
+        display: grid;
+        gap: 5px;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      input,
+      select,
+      textarea {
+        background: #fff;
+        border: 1px solid #c3d1d0;
+        border-radius: 6px;
+        color: var(--ink);
+        min-width: 0;
+        padding: 8px 10px;
+        width: 100%;
+      }
+
+      input,
+      select {
+        height: 40px;
+      }
+
+      textarea {
+        font-family: Consolas, "Cascadia Mono", monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        min-height: 300px;
+        resize: vertical;
+        white-space: pre;
+      }
+
+      .theme-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .chip {
+        background: #eef4f4;
+        border: 1px solid #c8d9d8;
+        border-radius: 999px;
+        color: #24413f;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 6px 9px;
+      }
+
+      .chip.active {
+        background: var(--teal);
+        border-color: var(--teal);
+        color: #fff;
+      }
+
+      .check-row {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        margin-top: 11px;
+      }
+
+      .check-row input {
+        height: 18px;
+        width: 18px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 14px;
+      }
+
+      .primary,
+      .secondary {
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        padding: 8px 13px;
+      }
+
+      .primary {
+        background: var(--teal);
+        border: 1px solid var(--teal);
+        color: #fff;
+      }
+
+      .primary:hover {
+        background: var(--teal-dark);
+      }
+
+      .secondary {
+        background: #fff;
+        border: 1px solid #b7c8c7;
+        color: var(--ink);
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.62;
+      }
+
+      .status {
+        border-left: 4px solid var(--teal);
+        color: var(--muted);
+        margin-top: 13px;
+        padding: 8px 11px;
+      }
+
+      .status.error {
+        border-color: var(--red);
+        color: var(--red);
+      }
+
+      .status.warn {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+
+      .preview-table-wrap {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        max-height: 260px;
+        overflow: auto;
+      }
+
+      table {
+        border-collapse: collapse;
+        min-width: 760px;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid #e2e9e9;
+        padding: 8px 9px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f1f5f5;
+        color: var(--muted);
+        font-size: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      td {
+        font-size: 13px;
+      }
+
+      .output-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .output-item {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 9px;
+      }
+
+      .output-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 1160px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .shell {
+          padding: 16px;
+        }
+
+        .topbar {
+          align-items: start;
+          display: grid;
+        }
+
+        .endpoint {
+          text-align: left;
+        }
+
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-kicker">BlunderMate Local Lab</div>
+          <h1>Lichess DB Workbench</h1>
+        </div>
+        <div class="endpoint">127.0.0.1:8765 · local backend</div>
+      </header>
+
+      <div class="layout">
+        <section class="panel">
+          <div class="panel-title">
+            <h2>Filters</h2>
+            <span id="dbPill" class="pill">loading</span>
+          </div>
+
+          <div class="field-grid">
+            <div class="field full">
+              <label for="inputFile">데이터 파일</label>
+              <select id="inputFile"></select>
+            </div>
+            <div class="field full">
+              <label for="title">문서 제목</label>
+              <input id="title" value="BlunderMate Puzzle Set">
+            </div>
+            <div class="field">
+              <label for="layout">양식</label>
+              <select id="layout">
+                <option value="print-minimal" selected>print-minimal</option>
+                <option value="standard">standard</option>
+                <option value="instagram">instagram</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="match">테마 조건</label>
+              <select id="match">
+                <option value="any">any</option>
+                <option value="all">all</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="minRating">최소 레이팅</label>
+              <input id="minRating" type="number" placeholder="1200">
+            </div>
+            <div class="field">
+              <label for="maxRating">최대 레이팅</label>
+              <input id="maxRating" type="number" placeholder="1800">
+            </div>
+            <div class="field">
+              <label for="minPopularity">최소 인기도</label>
+              <input id="minPopularity" type="number" value="80">
+            </div>
+            <div class="field">
+              <label for="count">문제 수</label>
+              <input id="count" type="number" value="12" min="1" max="500">
+            </div>
+            <div class="field">
+              <label for="seed">seed</label>
+              <input id="seed" type="number" value="42">
+            </div>
+            <div class="field">
+              <label for="workspaceName">workspace CSV</label>
+              <input id="workspaceName" value="local_workspace.csv">
+            </div>
+            <div class="field full">
+              <label for="customTheme">직접 입력 테마</label>
+              <input id="customTheme" placeholder="예: fork, mateIn2">
+            </div>
+            <div class="field full">
+              <label>테마</label>
+              <div id="themeGrid" class="theme-grid"></div>
+            </div>
+          </div>
+
+          <label class="check-row">
+            <input id="htmlOnly" type="checkbox">
+            HTML만 생성
+          </label>
+          <label class="check-row">
+            <input id="splitOutput" type="checkbox" checked>
+            문제지/정답지 분리
+          </label>
+          <label class="check-row">
+            <input id="solutionsAtEnd" type="checkbox" checked>
+            해답을 뒤에 모으기
+          </label>
+
+          <div class="actions">
+            <button id="previewButton" class="primary" type="button">DB에서 가져오기</button>
+            <button id="generateButton" class="secondary" type="button">HTML/PDF 생성</button>
+            <button id="refreshButton" class="secondary" type="button">새로고침</button>
+          </div>
+
+          <div id="status" class="status">로컬 서버를 확인하는 중입니다.</div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>Editable Workspace</h2>
+            <span id="previewCount" class="pill">0 rows</span>
+          </div>
+
+          <div class="preview-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Rating</th>
+                  <th>Popularity</th>
+                  <th>Themes</th>
+                  <th>Moves</th>
+                </tr>
+              </thead>
+              <tbody id="previewRows">
+                <tr><td colspan="5" class="muted">No rows loaded</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <textarea id="csvText" spellcheck="false"></textarea>
+          <div class="actions">
+            <button id="saveButton" class="primary" type="button">Workspace 저장</button>
+            <button id="clearButton" class="secondary" type="button">비우기</button>
+          </div>
+        </section>
+
+        <aside class="panel">
+          <div class="panel-title">
+            <h2>Outputs</h2>
+            <span class="pill">output</span>
+          </div>
+          <div id="resultLinks" class="output-list"></div>
+          <div style="height: 16px"></div>
+          <div id="outputList" class="output-list"></div>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      const state = {
+        selectedThemes: new Set(["fork"]),
+        themePresets: [],
+        dataFiles: [],
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function formatSize(bytes) {
+        if (!bytes) return "0 B";
+        if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+      }
+
+      function setStatus(message, kind = "ok") {
+        const status = $("status");
+        status.textContent = message;
+        status.classList.toggle("error", kind === "error");
+        status.classList.toggle("warn", kind === "warn");
+      }
+
+      function renderThemes() {
+        $("themeGrid").innerHTML = state.themePresets.map((theme) => {
+          const active = state.selectedThemes.has(theme) ? " active" : "";
+          return `<button class="chip${active}" type="button" data-theme="${escapeHtml(theme)}">${escapeHtml(theme)}</button>`;
+        }).join("");
+      }
+
+      function renderDataFiles(files) {
+        const select = $("inputFile");
+        select.innerHTML = "";
+        if (!files.length) {
+          select.innerHTML = "<option value=\"\">data 폴더에 CSV가 없습니다</option>";
+          $("dbPill").textContent = "no data";
+          return;
+        }
+
+        files.forEach((file) => {
+          const option = document.createElement("option");
+          option.value = file.name;
+          option.textContent = `${file.name} (${formatSize(file.size)})`;
+          select.appendChild(option);
+        });
+
+        const fullDb = files.find((file) => file.name === "lichess_db_puzzle.csv.zst");
+        if (fullDb) select.value = fullDb.name;
+        $("dbPill").textContent = fullDb ? "full DB found" : "CSV ready";
+      }
+
+      function renderOutputs(files) {
+        const list = $("outputList");
+        if (!files.length) {
+          list.innerHTML = "<div class=\"muted\">No generated files</div>";
+          return;
+        }
+
+        list.innerHTML = files.map((file) => `
+          <div class="output-item">
+            <a href="${escapeHtml(file.url)}" target="_blank" rel="noreferrer">${escapeHtml(file.name)}</a>
+            <div class="muted">${formatSize(file.size)}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderPreviewRows(rows) {
+        $("previewCount").textContent = `${rows.length} rows`;
+        if (!rows.length) {
+          $("previewRows").innerHTML = "<tr><td colspan=\"5\" class=\"muted\">No rows loaded</td></tr>";
+          return;
+        }
+
+        $("previewRows").innerHTML = rows.map((row) => `
+          <tr>
+            <td><a href="${escapeHtml(row.GameUrl)}" target="_blank" rel="noreferrer">${escapeHtml(row.PuzzleId)}</a></td>
+            <td>${escapeHtml(row.Rating)}</td>
+            <td>${escapeHtml(row.Popularity)}</td>
+            <td>${escapeHtml(row.Themes)}</td>
+            <td>${escapeHtml(row.Moves)}</td>
+          </tr>
+        `).join("");
+      }
+
+      function numberOrEmpty(id) {
+        const value = $(id).value.trim();
+        return value === "" ? "" : Number(value);
+      }
+
+      function payload() {
+        return {
+          input: $("inputFile").value,
+          title: $("title").value,
+          layout: $("layout").value,
+          themes: Array.from(state.selectedThemes),
+          customTheme: $("customTheme").value,
+          match: $("match").value,
+          minRating: numberOrEmpty("minRating"),
+          maxRating: numberOrEmpty("maxRating"),
+          minPopularity: numberOrEmpty("minPopularity"),
+          count: numberOrEmpty("count"),
+          seed: numberOrEmpty("seed"),
+          htmlOnly: $("htmlOnly").checked,
+          splitOutput: $("splitOutput").checked,
+          solutionsAtEnd: $("solutionsAtEnd").checked,
+        };
+      }
+
+      async function postJson(url, body) {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await response.json();
+        if (!data.ok) throw new Error(data.error || "Request failed.");
+        return data;
+      }
+
+      async function refresh() {
+        const response = await fetch("/api/status");
+        const data = await response.json();
+        state.themePresets = data.themePresets || [];
+        state.dataFiles = data.dataFiles || [];
+        renderThemes();
+        renderDataFiles(state.dataFiles);
+        renderOutputs(data.outputFiles || []);
+        setStatus("로컬 DB workbench가 준비되었습니다.");
+      }
+
+      async function preview() {
+        const button = $("previewButton");
+        button.disabled = true;
+        setStatus("DB를 스캔하는 중입니다. 전체 .zst는 시간이 조금 걸릴 수 있습니다.", "warn");
+        try {
+          const data = await postJson("/api/preview", payload());
+          $("csvText").value = data.csvText || "";
+          renderPreviewRows(data.puzzles || []);
+          setStatus(`${data.input}에서 ${data.count}개 퍼즐을 가져왔습니다.`);
+        } catch (error) {
+          setStatus(error.message, "error");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function saveWorkspace() {
+        const button = $("saveButton");
+        button.disabled = true;
+        try {
+          const data = await postJson("/api/save-csv", {
+            filename: $("workspaceName").value,
+            csvText: $("csvText").value,
+          });
+          renderDataFiles(data.dataFiles || []);
+          $("inputFile").value = data.name;
+          setStatus(`${data.name} 저장 완료: ${data.rows} rows`);
+        } catch (error) {
+          setStatus(error.message, "error");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      function renderResultLinks(data) {
+        const links = [];
+        [
+          ["문제지 PDF", data.questionsPdfUrl],
+          ["정답지 PDF", data.answersPdfUrl],
+          ["PDF", data.pdfUrl],
+          ["문제지 HTML", data.questionsHtmlUrl],
+          ["정답지 HTML", data.answersHtmlUrl],
+          ["HTML", data.htmlUrl],
+        ].forEach(([label, url]) => {
+          if (url) links.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${label}</a>`);
+        });
+        $("resultLinks").innerHTML = links.length
+          ? links.map((link) => `<div class="output-item">${link}</div>`).join("")
+          : "<div class=\"muted\">No result links</div>";
+      }
+
+      async function generate() {
+        const button = $("generateButton");
+        button.disabled = true;
+        setStatus("HTML/PDF를 생성하는 중입니다.", "warn");
+        try {
+          const data = await postJson("/api/generate", payload());
+          renderResultLinks(data);
+          renderOutputs(data.outputFiles || []);
+          setStatus(`${data.count}개 퍼즐로 생성했습니다.`);
+        } catch (error) {
+          setStatus(error.message, "error");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      $("themeGrid").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-theme]");
+        if (!button) return;
+        const theme = button.dataset.theme;
+        if (state.selectedThemes.has(theme)) state.selectedThemes.delete(theme);
+        else state.selectedThemes.add(theme);
+        renderThemes();
+      });
+
+      $("previewButton").addEventListener("click", preview);
+      $("saveButton").addEventListener("click", saveWorkspace);
+      $("generateButton").addEventListener("click", generate);
+      $("refreshButton").addEventListener("click", refresh);
+      $("clearButton").addEventListener("click", () => {
+        $("csvText").value = "";
+        renderPreviewRows([]);
+        setStatus("Workspace를 비웠습니다.");
+      });
+
+      refresh();
+    </script>
+  </body>
+</html>
