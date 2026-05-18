@@ -172,10 +172,22 @@
       }
 
       .theme-grid {
+        display: grid;
+        gap: 11px;
+        margin-top: 2px;
+      }
+
+      .theme-group-name {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .theme-chips {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 2px;
+        gap: 7px;
       }
 
       .chip {
@@ -493,12 +505,14 @@
               </select>
             </div>
             <div class="field">
-              <label for="minRating">최소 레이팅</label>
-              <input id="minRating" type="number" value="1200">
-            </div>
-            <div class="field">
-              <label for="maxRating">최대 레이팅</label>
-              <input id="maxRating" type="number" value="2800">
+              <label for="difficulty">난이도</label>
+              <select id="difficulty">
+                <option value="beginner">입문 (~1000)</option>
+                <option value="easy">초급 (1000-1400)</option>
+                <option value="intermediate" selected>중급 (1400-1800)</option>
+                <option value="advanced">고급 (1800-2200)</option>
+                <option value="expert">전문가 (2200+)</option>
+              </select>
             </div>
             <div class="field">
               <label for="minPopularity">최소 인기도</label>
@@ -568,16 +582,47 @@
     <script>
       let PUZZLES = [];
 
-      const THEME_PRESETS = [
-        "fork",
-        "mateIn2",
-        "advantage",
-        "attraction",
-        "sacrifice",
-        "middlegame",
-        "short",
-        "long",
-        "veryLong"
+      const DIFFICULTY = {
+        beginner: { label: "입문", min: 0, max: 1000 },
+        easy: { label: "초급", min: 1000, max: 1400 },
+        intermediate: { label: "중급", min: 1400, max: 1800 },
+        advanced: { label: "고급", min: 1800, max: 2200 },
+        expert: { label: "전문가", min: 2200, max: 3500 }
+      };
+
+      const THEME_GROUPS = [
+        {
+          name: "메이트",
+          themes: [
+            { id: "mateIn1", label: "1수 메이트" },
+            { id: "mateIn2", label: "2수 메이트" },
+            { id: "mateIn3", label: "3수 메이트" },
+            { id: "backRankMate", label: "백랭크 메이트" },
+            { id: "smotheredMate", label: "질식 메이트" }
+          ]
+        },
+        {
+          name: "전술",
+          themes: [
+            { id: "fork", label: "포크" },
+            { id: "pin", label: "핀" },
+            { id: "skewer", label: "스큐어" },
+            { id: "discoveredAttack", label: "디스커버드 어택" },
+            { id: "sacrifice", label: "희생" },
+            { id: "attraction", label: "유인" },
+            { id: "deflection", label: "디플렉션" },
+            { id: "hangingPiece", label: "무방비 기물" }
+          ]
+        },
+        {
+          name: "엔드게임",
+          themes: [
+            { id: "endgame", label: "엔드게임" },
+            { id: "rookEndgame", label: "룩 엔드게임" },
+            { id: "pawnEndgame", label: "폰 엔드게임" },
+            { id: "queenEndgame", label: "퀸 엔드게임" }
+          ]
+        }
       ];
 
       function pieceCode(char) {
@@ -765,11 +810,12 @@
         status.classList.remove("error");
         status.textContent = "퍼즐을 불러오는 중...";
         try {
+          const level = DIFFICULTY[$("difficulty").value] || DIFFICULTY.intermediate;
           const body = {
             themes: Array.from(selectedThemes),
             match: $("matchMode").value,
-            minRating: parseNumber("minRating", 0),
-            maxRating: parseNumber("maxRating", 9999),
+            minRating: level.min,
+            maxRating: level.max,
             minPopularity: parseNumber("minPopularity", 0),
             count: Math.max(1, Math.min(12, parseNumber("count", 3)))
           };
@@ -793,10 +839,19 @@
       }
 
       function renderThemes() {
-        $("themeGrid").innerHTML = THEME_PRESETS.map((theme) => {
-          const active = selectedThemes.has(theme) ? " active" : "";
-          return `<button class="chip${active}" type="button" data-theme="${theme}">${theme}</button>`;
+        $("themeGrid").innerHTML = THEME_GROUPS.map((group) => {
+          const chips = group.themes.map((theme) => {
+            const active = selectedThemes.has(theme.id) ? " active" : "";
+            return `<button class="chip${active}" type="button" data-theme="${theme.id}">${theme.label}</button>`;
+          }).join("");
+          return `<div class="theme-group"><div class="theme-group-name">${group.name}</div><div class="theme-chips">${chips}</div></div>`;
         }).join("");
+      }
+
+      function moveCountLabel(puzzle) {
+        const count = Math.ceil((puzzle.moves.split(" ").length - 1) / 2);
+        const isMate = puzzle.themes.some((theme) => theme === "mate" || theme.indexOf("mateIn") === 0);
+        return count + (isMate ? "수 메이트" : "수");
       }
 
       function renderPreview() {
@@ -868,14 +923,15 @@
           };
         }
 
+        const levelLabel = (DIFFICULTY[$("difficulty").value] || DIFFICULTY.intermediate).label;
         const pages = puzzles.map((puzzle, index) => {
           const turn = turnInfo(puzzle.fen);
           return `
           <section class="page">
             <div class="page-head">
               <span class="ph-num">문제 ${index + 1} / ${total}</span>
-              <span class="ph-turn"><span class="dot ${turn.color}"></span>${turn.label}</span>
-              <span class="ph-rating">Rating ${puzzle.rating}</span>
+              <span class="ph-turn"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)}</span>
+              <span class="ph-level">난이도: ${levelLabel}</span>
             </div>
             <div class="page-board">${boardMarkup(puzzle, true)}</div>
             <div class="work">
@@ -919,7 +975,7 @@
       display: grid; grid-template-columns: 1fr auto 1fr; padding-bottom: 4mm;
     }
     .ph-num { font-size: 12px; font-weight: 700; }
-    .ph-rating { font-size: 12px; font-weight: 700; text-align: right; }
+    .ph-level { font-size: 12px; font-weight: 700; text-align: right; }
     .ph-turn {
       align-items: center; display: flex; font-size: 17px;
       font-weight: 700; gap: 7px; justify-self: center;
@@ -1019,8 +1075,7 @@
         $("layout").value = "worksheet";
         $("pieceSet").value = "cburnett";
         $("matchMode").value = "any";
-        $("minRating").value = 1200;
-        $("maxRating").value = 2800;
+        $("difficulty").value = "intermediate";
         $("minPopularity").value = 80;
         $("count").value = 3;
         $("includeAnswers").checked = true;
@@ -1038,7 +1093,7 @@
         markStale();
       });
 
-      ["matchMode", "minRating", "maxRating", "minPopularity", "count"].forEach((id) => {
+      ["matchMode", "difficulty", "minPopularity", "count"].forEach((id) => {
         $(id).addEventListener("change", markStale);
       });
 
