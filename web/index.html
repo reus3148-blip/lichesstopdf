@@ -675,7 +675,7 @@
         return `${uci.slice(0, 2)}-${uci.slice(2, 4)}${suffix}`;
       }
 
-      function boardMarkup(puzzle) {
+      function boardMarkup(puzzle, coords) {
         const position = puzzlePosition(puzzle);
         const firstMove = puzzle.moves.split(" ")[0];
         const from = squareIndex(firstMove.slice(0, 2));
@@ -686,13 +686,16 @@
         const set = currentPieceSet();
         let html = '<div class="board" role="img" aria-label="Chess board">';
 
-        rows.forEach((row) => {
-          cols.forEach((col) => {
+        rows.forEach((row, ri) => {
+          cols.forEach((col, ci) => {
             const tone = (row + col) % 2 === 0 ? "light" : "dark";
             const isLast = (row === from.row && col === from.col) || (row === to.row && col === to.col);
             const code = pieceCode(position.board[row][col]);
             const piece = code ? `<img class="piece" src="pieces/${set}/${code}.svg" alt="">` : "";
-            html += `<div class="square ${tone}${isLast ? " last" : ""}">${piece}</div>`;
+            let mark = "";
+            if (coords && ri === 7) mark += `<span class="coord file">${"abcdefgh"[col]}</span>`;
+            if (coords && ci === 0) mark += `<span class="coord rank">${8 - row}</span>`;
+            html += `<div class="square ${tone}${isLast ? " last" : ""}">${piece}${mark}</div>`;
           });
         });
 
@@ -793,7 +796,7 @@
           const turn = turnInfo(puzzle.fen);
           return `
           <article class="${isCards ? "print-card" : "print-row"}">
-            ${boardMarkup(puzzle)}
+            ${boardMarkup(puzzle, true)}
             <div>
               <h2>${index + 1}. ${puzzle.id}</h2>
               <p class="to-move"><span class="dot ${turn.color}"></span>${turn.label}</p>
@@ -855,10 +858,15 @@
       width: 100%;
     }
     .print-card .board { max-width: 320px; }
-    .square { align-items: center; display: flex; justify-content: center; }
+    .square { align-items: center; display: flex; justify-content: center; position: relative; }
     .square.light { background: #f0d9b5; }
     .square.dark { background: #b58863; }
     .square.last { box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65); }
+    .coord { font-size: 8px; font-weight: 700; line-height: 1; position: absolute; }
+    .coord.file { bottom: 1px; right: 2px; }
+    .coord.rank { left: 2px; top: 1px; }
+    .square.light .coord { color: #b58863; }
+    .square.dark .coord { color: #f0d9b5; }
     .piece { display: block; height: 100%; width: 100%; }
     .to-move {
       align-items: center; color: #333; display: flex;
