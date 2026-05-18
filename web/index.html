@@ -582,6 +582,14 @@
         return $("pieceSet").value;
       }
 
+      function turnInfo(fen) {
+        const active = (fen.split(" ")[1] || "w").toLowerCase();
+        // Lichess FEN is the position before the opponent's setup move,
+        // so the solver plays the opposite color of the FEN active color.
+        const color = active === "w" ? "black" : "white";
+        return { color: color, label: color === "black" ? "흑이 둘 차례" : "백이 둘 차례" };
+      }
+
       const selectedThemes = new Set(["fork"]);
       const $ = (id) => document.getElementById(id);
 
@@ -781,17 +789,21 @@
         const layout = $("layout").value;
         const includeAnswers = $("includeAnswers").checked || layout === "answers";
         const isCards = layout === "cards";
-        const puzzleSection = puzzles.map((puzzle, index) => `
+        const puzzleSection = puzzles.map((puzzle, index) => {
+          const turn = turnInfo(puzzle.fen);
+          return `
           <article class="${isCards ? "print-card" : "print-row"}">
             ${boardMarkup(puzzle)}
             <div>
               <h2>${index + 1}. ${puzzle.id}</h2>
+              <p class="to-move"><span class="dot ${turn.color}"></span>${turn.label}</p>
               <p>Rating ${puzzle.rating} · Popularity ${puzzle.popularity}</p>
               <p>${puzzle.opening}</p>
               <p>${puzzle.themes.join(" · ")}</p>
             </div>
           </article>
-        `).join("");
+        `;
+        }).join("");
         const answerSection = includeAnswers ? `
           <section class="answers">
             <h2>Answers</h2>
@@ -848,6 +860,17 @@
     .square.dark { background: #b58863; }
     .square.last { box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65); }
     .piece { display: block; height: 100%; width: 100%; }
+    .to-move {
+      align-items: center; color: #333; display: flex;
+      font-size: 13px; font-weight: 600; gap: 6px; margin: 0 0 6px;
+    }
+    .dot {
+      border: 1px solid #333; border-radius: 50%; flex: none;
+      height: 11px; width: 11px;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .dot.black { background: #333; }
+    .dot.white { background: #ffffff; }
     .answers { break-before: page; margin-top: 28px; }
     @media print { body { margin: 14mm; } }
   </style>
