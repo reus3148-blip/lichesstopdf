@@ -3,18 +3,28 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lichess PDF Maker</title>
+    <title>BlunderMate Lab</title>
+    <meta
+      name="description"
+      content="BlunderMate Lab static MVP for printable chess puzzle sheets and chess tool experiments."
+    >
     <style>
       :root {
         color-scheme: light;
-        --bg: #f7f6f1;
-        --panel: #ffffff;
-        --ink: #1f2933;
-        --muted: #66727f;
-        --line: #d8ddd6;
-        --accent: #2f6f5e;
-        --accent-2: #8a4b35;
-        --danger: #9b2c2c;
+        --bg: #f4f7f6;
+        --paper: #ffffff;
+        --ink: #172026;
+        --muted: #60717c;
+        --line: #d5dfdf;
+        --soft: #e9f1ef;
+        --teal: #176b66;
+        --teal-2: #0e514f;
+        --blue: #315f9f;
+        --gold: #b7791f;
+        --coral: #b84f43;
+        --green: #2f7d4f;
+        --light-square: #f0d9b5;
+        --dark-square: #b58863;
       }
 
       * {
@@ -30,76 +40,134 @@
         margin: 0;
       }
 
-      main {
-        margin: 0 auto;
-        max-width: 1180px;
-        padding: 28px;
+      button,
+      input,
+      select {
+        font: inherit;
       }
 
-      header {
-        align-items: end;
+      button {
+        min-height: 40px;
+      }
+
+      a {
+        color: var(--blue);
+        font-weight: 700;
+      }
+
+      .shell {
+        margin: 0 auto;
+        max-width: 1240px;
+        padding: 24px;
+      }
+
+      .topbar {
+        align-items: center;
         border-bottom: 1px solid var(--line);
         display: flex;
         gap: 18px;
         justify-content: space-between;
-        margin-bottom: 22px;
-        padding-bottom: 16px;
+        padding: 6px 0 18px;
       }
 
-      h1 {
-        font-size: 28px;
-        line-height: 1.1;
+      .brand {
+        display: grid;
+        gap: 2px;
+      }
+
+      .brand-mark {
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
         margin: 0;
       }
 
-      .header-note {
+      h1 {
+        font-size: 30px;
+        line-height: 1.08;
+      }
+
+      .top-meta {
         color: var(--muted);
-        max-width: 520px;
+        max-width: 540px;
+        overflow-wrap: anywhere;
         text-align: right;
       }
 
-      .layout {
+      .workspace {
         display: grid;
         gap: 18px;
-        grid-template-columns: minmax(0, 1fr) 340px;
+        grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+        margin-top: 22px;
       }
 
-      .panel {
-        background: var(--panel);
+      .surface {
+        background: var(--paper);
         border: 1px solid var(--line);
         border-radius: 8px;
         padding: 18px;
       }
 
       .section-title {
-        font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 12px;
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        justify-content: space-between;
+        margin-bottom: 14px;
       }
 
-      .grid {
+      .section-title h2 {
+        font-size: 17px;
+      }
+
+      .pill {
+        background: var(--soft);
+        border: 1px solid #c9dbd7;
+        border-radius: 999px;
+        color: var(--teal-2);
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 9px;
+        white-space: nowrap;
+      }
+
+      .field-grid {
         display: grid;
-        gap: 14px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .field {
+        display: grid;
+        gap: 5px;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
       }
 
       label {
         color: var(--muted);
-        display: block;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
-        margin-bottom: 5px;
       }
 
       input,
       select {
         background: #fff;
-        border: 1px solid #c8d0c9;
+        border: 1px solid #c4d1d1;
         border-radius: 6px;
         color: var(--ink);
-        font: inherit;
         height: 40px;
-        padding: 8px 10px;
+        min-width: 0;
+        padding: 7px 9px;
         width: 100%;
       }
 
@@ -107,97 +175,154 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 14px;
+        margin-top: 2px;
       }
 
-      .theme-chip {
-        background: #eef2ee;
-        border: 1px solid #cbd6ce;
-        border-radius: 6px;
-        color: #243b35;
+      .chip {
+        background: #eef4f4;
+        border: 1px solid #c7d9d8;
+        border-radius: 999px;
+        color: #24413f;
         cursor: pointer;
-        font: inherit;
-        min-height: 34px;
+        font-size: 13px;
+        font-weight: 700;
         padding: 6px 10px;
       }
 
-      .theme-chip.active {
-        background: var(--accent);
-        border-color: var(--accent);
+      .chip.active {
+        background: var(--teal);
+        border-color: var(--teal);
         color: #fff;
+      }
+
+      .toggle-row {
+        align-items: center;
+        display: flex;
+        gap: 9px;
+        margin-top: 14px;
+      }
+
+      .toggle-row input {
+        height: 18px;
+        width: 18px;
       }
 
       .actions {
-        align-items: center;
         display: flex;
+        flex-wrap: wrap;
         gap: 10px;
-        margin-top: 18px;
+        margin-top: 16px;
+      }
+
+      .primary,
+      .secondary {
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        padding: 8px 14px;
       }
 
       .primary {
-        background: var(--accent);
-        border: 1px solid var(--accent);
-        border-radius: 6px;
+        background: var(--teal);
+        border: 1px solid var(--teal);
         color: #fff;
-        cursor: pointer;
-        font: inherit;
-        font-weight: 700;
-        min-height: 42px;
-        padding: 8px 16px;
+      }
+
+      .primary:hover {
+        background: var(--teal-2);
       }
 
       .secondary {
         background: #fff;
-        border: 1px solid #b9c5bc;
-        border-radius: 6px;
+        border: 1px solid #b8c8c8;
         color: var(--ink);
-        cursor: pointer;
-        font: inherit;
-        min-height: 42px;
-        padding: 8px 14px;
-      }
-
-      .primary:disabled,
-      .secondary:disabled {
-        cursor: wait;
-        opacity: 0.65;
       }
 
       .status {
-        border-left: 4px solid var(--accent);
-        margin-top: 16px;
-        padding: 8px 12px;
+        border-left: 4px solid var(--teal);
+        color: var(--muted);
+        margin-top: 14px;
+        padding: 8px 11px;
       }
 
       .status.error {
-        border-color: var(--danger);
-        color: var(--danger);
+        border-color: var(--coral);
+        color: var(--coral);
       }
 
-      .result-links {
+      .preview-head {
+        align-items: end;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .preview-head h2 {
+        font-size: 22px;
+      }
+
+      .preview-count {
+        color: var(--muted);
+        text-align: right;
+      }
+
+      .puzzle-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+      }
+
+      .puzzle-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 210px minmax(0, 1fr);
+        min-width: 0;
+        padding: 12px;
+      }
+
+      .board {
+        aspect-ratio: 1;
+        border: 1px solid #6d553f;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        width: 100%;
+      }
+
+      .square {
+        align-items: center;
+        display: flex;
+        font-family: "Segoe UI Symbol", "Arial Unicode MS", serif;
+        font-size: 25px;
+        justify-content: center;
+        line-height: 1;
+        min-height: 0;
+        position: relative;
+      }
+
+      .square.light {
+        background: var(--light-square);
+      }
+
+      .square.dark {
+        background: var(--dark-square);
+      }
+
+      .square.last {
+        box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65);
+      }
+
+      .puzzle-copy {
         display: grid;
         gap: 8px;
-        margin-top: 12px;
+        min-width: 0;
       }
 
-      a {
-        color: #1d5f90;
+      .puzzle-title {
+        font-size: 16px;
         font-weight: 700;
-      }
-
-      .file-list {
-        display: grid;
-        gap: 9px;
-      }
-
-      .file-item {
-        border-bottom: 1px solid var(--line);
-        padding-bottom: 9px;
-      }
-
-      .file-item:last-child {
-        border-bottom: 0;
-        padding-bottom: 0;
       }
 
       .muted {
@@ -205,298 +330,621 @@
         font-size: 13px;
       }
 
-      .empty {
-        color: var(--accent-2);
-      }
-
-      .checkbox-row {
-        align-items: center;
+      .tags {
         display: flex;
-        gap: 8px;
-        margin-top: 12px;
+        flex-wrap: wrap;
+        gap: 6px;
       }
 
-      .checkbox-row input {
-        height: 18px;
-        width: 18px;
+      .tag {
+        background: #eef2f6;
+        border: 1px solid #d3dce6;
+        border-radius: 999px;
+        color: #34495f;
+        font-size: 12px;
+        padding: 2px 7px;
       }
 
-      @media (max-width: 900px) {
-        main {
-          padding: 18px;
+      .lab-roadmap {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        margin-top: 18px;
+      }
+
+      .feature {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        min-height: 112px;
+        padding: 13px;
+      }
+
+      .feature h3 {
+        font-size: 14px;
+        line-height: 1.25;
+        margin-bottom: 8px;
+      }
+
+      .feature-state {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .state-live {
+        color: var(--green);
+      }
+
+      .state-next {
+        color: var(--gold);
+      }
+
+      @media (max-width: 1080px) {
+        .workspace,
+        .puzzle-grid,
+        .lab-roadmap {
+          grid-template-columns: 1fr;
         }
 
-        header,
-        .layout {
-          display: block;
+        .puzzle-card {
+          grid-template-columns: 160px minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 680px) {
+        .shell {
+          padding: 16px;
         }
 
-        .header-note {
-          margin-top: 8px;
+        .topbar,
+        .preview-head {
+          align-items: start;
+          display: grid;
+        }
+
+        .section-title {
+          align-items: start;
+          display: grid;
+          justify-content: start;
+        }
+
+        .top-meta,
+        .preview-count {
           text-align: left;
         }
 
-        .panel {
-          margin-bottom: 16px;
+        .field-grid,
+        .puzzle-card {
+          grid-template-columns: 1fr;
         }
 
-        .grid {
-          grid-template-columns: 1fr;
+        .pill {
+          white-space: normal;
+        }
+
+        .puzzle-card .board {
+          max-width: 260px;
         }
       }
     </style>
   </head>
   <body>
-    <main>
-      <header>
-        <div>
-          <h1>Lichess PDF Maker</h1>
-          <div class="muted">로컬 CSV에서 퍼즐을 고르고 인쇄용 PDF를 만듭니다.</div>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">BlunderMate Lab</div>
+          <h1>Printable Puzzle Studio</h1>
         </div>
-        <div class="header-note">PDF 생성은 이 PC의 Python 서버가 처리합니다.</div>
+        <p class="top-meta">
+          lab.blundermate.app 정적 MVP. 현재는 샘플 퍼즐로 인쇄용 HTML을 만들고,
+          PDF 백엔드와 전체 Lichess DB는 별도 단계에서 붙입니다.
+        </p>
       </header>
 
-      <div class="layout">
-        <section class="panel">
-          <div class="section-title">퍼즐 조건</div>
-
-          <div class="grid">
-            <div>
-              <label for="inputFile">데이터 파일</label>
-              <select id="inputFile"></select>
-            </div>
-            <div>
-              <label for="title">PDF 제목</label>
-              <input id="title" value="Lichess Puzzle Set">
-            </div>
-            <div>
-              <label for="layout">양식</label>
-              <select id="layout">
-                <option value="print-minimal" selected>인쇄용 미니멀</option>
-                <option value="standard">기본 상세</option>
-                <option value="instagram">인스타그램 정사각형</option>
-              </select>
-            </div>
+      <div class="workspace">
+        <section class="surface" aria-labelledby="controls-title">
+          <div class="section-title">
+            <h2 id="controls-title">Sheet Builder</h2>
+            <span class="pill">sample CSV</span>
           </div>
 
-          <div style="height: 16px"></div>
-          <label>테마</label>
-          <div id="themeGrid" class="theme-grid"></div>
-
-          <div class="grid">
-            <div>
-              <label for="customTheme">직접 입력한 테마</label>
-              <input id="customTheme" placeholder="예: fork, mateIn2">
+          <div class="field-grid">
+            <div class="field full">
+              <label for="sheetTitle">제목</label>
+              <input id="sheetTitle" value="BlunderMate Lab Puzzle Set">
             </div>
-            <div>
-              <label for="match">여러 테마 조건</label>
-              <select id="match">
-                <option value="any">하나라도 맞으면 포함</option>
-                <option value="all">모든 테마가 맞아야 포함</option>
+            <div class="field">
+              <label for="layout">양식</label>
+              <select id="layout">
+                <option value="worksheet">Puzzle sheet</option>
+                <option value="answers">Answer sheet</option>
+                <option value="cards">Instagram cards</option>
               </select>
             </div>
-            <div>
+            <div class="field">
+              <label for="matchMode">테마 조건</label>
+              <select id="matchMode">
+                <option value="any">하나 이상</option>
+                <option value="all">모두 포함</option>
+              </select>
+            </div>
+            <div class="field">
               <label for="minRating">최소 레이팅</label>
-              <input id="minRating" type="number" placeholder="1200">
+              <input id="minRating" type="number" value="1200">
             </div>
-            <div>
+            <div class="field">
               <label for="maxRating">최대 레이팅</label>
-              <input id="maxRating" type="number" placeholder="1800">
+              <input id="maxRating" type="number" value="2800">
             </div>
-            <div>
+            <div class="field">
               <label for="minPopularity">최소 인기도</label>
               <input id="minPopularity" type="number" value="80">
             </div>
-            <div>
+            <div class="field">
               <label for="count">문제 수</label>
-              <input id="count" type="number" value="10" min="1" max="200">
-            </div>
-            <div>
-              <label for="seed">랜덤 seed</label>
-              <input id="seed" type="number" value="42">
+              <input id="count" type="number" value="3" min="1" max="12">
             </div>
           </div>
 
-          <label class="checkbox-row">
-            <input id="htmlOnly" type="checkbox">
-            HTML만 만들기
+          <label class="toggle-row">
+            <input id="includeAnswers" type="checkbox" checked>
+            해답 섹션 포함
           </label>
 
-          <label class="checkbox-row">
-            <input id="solutionsAtEnd" type="checkbox" checked>
-            해답을 맨 뒤에 모으기
-          </label>
-
-          <label class="checkbox-row">
-            <input id="splitOutput" type="checkbox" checked>
-            문제지와 정답지 따로 만들기
-          </label>
+          <div class="field" style="margin-top: 14px">
+            <label>테마</label>
+            <div id="themeGrid" class="theme-grid"></div>
+          </div>
 
           <div class="actions">
-            <button id="generate" class="primary">PDF 만들기</button>
-            <button id="refresh" class="secondary">목록 새로고침</button>
+            <button id="printButton" class="primary" type="button">Printable HTML 열기</button>
+            <button id="downloadButton" class="secondary" type="button">HTML 다운로드</button>
+            <button id="resetButton" class="secondary" type="button">초기화</button>
           </div>
 
-          <div id="status" class="status muted">준비 중...</div>
-          <div id="resultLinks" class="result-links"></div>
+          <div id="status" class="status">샘플 데이터가 준비되었습니다.</div>
         </section>
 
-        <aside class="panel">
-          <div class="section-title">최근 생성 파일</div>
-          <div id="outputList" class="file-list"></div>
-        </aside>
+        <section class="surface" aria-labelledby="preview-title">
+          <div class="preview-head">
+            <div>
+              <h2 id="preview-title">Preview</h2>
+              <p class="muted">Lichess sample rows only</p>
+            </div>
+            <div id="previewCount" class="preview-count">0 puzzles</div>
+          </div>
+          <div id="puzzleGrid" class="puzzle-grid"></div>
+        </section>
       </div>
+
+      <section class="lab-roadmap" aria-label="Lab feature shelf">
+        <article class="feature">
+          <h3>Puzzle sheet generator</h3>
+          <div class="feature-state state-live">Static demo live</div>
+        </article>
+        <article class="feature">
+          <h3>Answer sheet generator</h3>
+          <div class="feature-state state-live">Static demo live</div>
+        </article>
+        <article class="feature">
+          <h3>Instagram carousel export</h3>
+          <div class="feature-state state-next">Prototype next</div>
+        </article>
+        <article class="feature">
+          <h3>Daily calculation set</h3>
+          <div class="feature-state">Planned</div>
+        </article>
+        <article class="feature">
+          <h3>Coach homework sheet</h3>
+          <div class="feature-state">Planned</div>
+        </article>
+      </section>
     </main>
 
     <script>
-      const state = {
-        selectedThemes: new Set(["fork"]),
-        themePresets: [],
+      const PUZZLES = [
+        {
+          id: "00sHx",
+          fen: "q3k1nr/1pp1nQpp/3p4/1P2p3/4P3/B1PP1b2/B5PP/5K2 b k - 0 17",
+          moves: "e8d7 a2e6 d7d8 f7f8",
+          rating: 1760,
+          popularity: 83,
+          themes: ["mate", "mateIn2", "middlegame", "short"],
+          gameUrl: "https://lichess.org/yyznGmXs/black#34",
+          opening: "Italian Game"
+        },
+        {
+          id: "00sJ9",
+          fen: "r3r1k1/p4ppp/2p2n2/1p6/3P1qb1/2NQR3/PPB2PP1/R1B3K1 w - - 5 18",
+          moves: "e3g3 e8e1 g1h2 e1c1 a1c1 f4h6 h2g1 h6c1",
+          rating: 2671,
+          popularity: 87,
+          themes: ["advantage", "attraction", "fork", "middlegame", "sacrifice", "veryLong"],
+          gameUrl: "https://lichess.org/gyFeQsOE#35",
+          opening: "French Defense"
+        },
+        {
+          id: "00sJb",
+          fen: "Q1b2r1k/p2np2p/5bp1/q7/5P2/4B3/PPP3PP/2KR1B1R w - - 1 17",
+          moves: "d1d7 a5e1 d7d1 e1e3 c1b1 e3b6",
+          rating: 2235,
+          popularity: 97,
+          themes: ["advantage", "fork", "long"],
+          gameUrl: "https://lichess.org/kiuvTFoE#33",
+          opening: "Sicilian Defense"
+        }
+      ];
+
+      const THEME_PRESETS = [
+        "fork",
+        "mateIn2",
+        "advantage",
+        "attraction",
+        "sacrifice",
+        "middlegame",
+        "short",
+        "long",
+        "veryLong"
+      ];
+
+      const PIECES = {
+        K: "♔",
+        Q: "♕",
+        R: "♖",
+        B: "♗",
+        N: "♘",
+        P: "♙",
+        k: "♚",
+        q: "♛",
+        r: "♜",
+        b: "♝",
+        n: "♞",
+        p: "♟"
       };
 
+      const selectedThemes = new Set(["fork"]);
       const $ = (id) => document.getElementById(id);
 
-      function formatSize(bytes) {
-        if (!bytes) return "0 B";
-        if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+      function parseNumber(id, fallback) {
+        const value = Number($(id).value);
+        return Number.isFinite(value) ? value : fallback;
       }
 
-      function setStatus(message, isError = false) {
-        const status = $("status");
-        status.textContent = message;
-        status.classList.toggle("error", isError);
+      function squareIndex(square) {
+        const file = square.charCodeAt(0) - 97;
+        const rank = Number(square[1]);
+        return { row: 8 - rank, col: file };
+      }
+
+      function cloneBoard(board) {
+        return board.map((row) => row.slice());
+      }
+
+      function fenToPosition(fen) {
+        const parts = fen.split(" ");
+        const rows = parts[0].split("/").map((row) => {
+          const squares = [];
+          for (const char of row) {
+            if (/\d/.test(char)) {
+              for (let i = 0; i < Number(char); i += 1) squares.push("");
+            } else {
+              squares.push(char);
+            }
+          }
+          return squares;
+        });
+        return {
+          board: rows,
+          turn: parts[1] || "w",
+          enPassant: parts[3] || "-"
+        };
+      }
+
+      function applyUci(position, uci) {
+        const next = {
+          board: cloneBoard(position.board),
+          turn: position.turn === "w" ? "b" : "w",
+          enPassant: "-"
+        };
+        const from = squareIndex(uci.slice(0, 2));
+        const to = squareIndex(uci.slice(2, 4));
+        const promotion = uci[4];
+        const piece = next.board[from.row][from.col];
+
+        if (!piece) return next;
+
+        if (piece.toLowerCase() === "p" && position.enPassant === uci.slice(2, 4) && !next.board[to.row][to.col]) {
+          const capturedPawnRow = position.turn === "w" ? to.row + 1 : to.row - 1;
+          next.board[capturedPawnRow][to.col] = "";
+        }
+
+        next.board[from.row][from.col] = "";
+        next.board[to.row][to.col] = promotion
+          ? position.turn === "w"
+            ? promotion.toUpperCase()
+            : promotion.toLowerCase()
+          : piece;
+
+        if (piece.toLowerCase() === "k" && Math.abs(to.col - from.col) === 2) {
+          const rookFromCol = to.col > from.col ? 7 : 0;
+          const rookToCol = to.col > from.col ? 5 : 3;
+          next.board[to.row][rookToCol] = next.board[to.row][rookFromCol];
+          next.board[to.row][rookFromCol] = "";
+        }
+
+        return next;
+      }
+
+      function puzzlePosition(puzzle) {
+        const initial = fenToPosition(puzzle.fen);
+        const firstMove = puzzle.moves.split(" ")[0];
+        return applyUci(initial, firstMove);
+      }
+
+      function moveText(uci) {
+        if (!uci) return "";
+        const suffix = uci[4] ? `=${uci[4].toUpperCase()}` : "";
+        return `${uci.slice(0, 2)}-${uci.slice(2, 4)}${suffix}`;
+      }
+
+      function boardMarkup(puzzle) {
+        const position = puzzlePosition(puzzle);
+        const firstMove = puzzle.moves.split(" ")[0];
+        const from = squareIndex(firstMove.slice(0, 2));
+        const to = squareIndex(firstMove.slice(2, 4));
+        const flipped = position.turn === "b";
+        const rows = flipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
+        const cols = flipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
+        let html = '<div class="board" role="img" aria-label="Chess board">';
+
+        rows.forEach((row) => {
+          cols.forEach((col) => {
+            const tone = (row + col) % 2 === 0 ? "light" : "dark";
+            const isLast = (row === from.row && col === from.col) || (row === to.row && col === to.col);
+            const piece = PIECES[position.board[row][col]] || "";
+            html += `<div class="square ${tone}${isLast ? " last" : ""}">${piece}</div>`;
+          });
+        });
+
+        return `${html}</div>`;
+      }
+
+      function solutionMoves(puzzle) {
+        const moves = puzzle.moves.split(" ");
+        return moves.slice(1).map(moveText).join(" ");
+      }
+
+      function currentPuzzles() {
+        const minRating = parseNumber("minRating", 0);
+        const maxRating = parseNumber("maxRating", 9999);
+        const minPopularity = parseNumber("minPopularity", 0);
+        const count = Math.max(1, Math.min(12, parseNumber("count", 3)));
+        const matchMode = $("matchMode").value;
+        const themes = Array.from(selectedThemes);
+
+        return PUZZLES.filter((puzzle) => {
+          const themeMatch =
+            themes.length === 0 ||
+            (matchMode === "all"
+              ? themes.every((theme) => puzzle.themes.includes(theme))
+              : themes.some((theme) => puzzle.themes.includes(theme)));
+          return (
+            themeMatch &&
+            puzzle.rating >= minRating &&
+            puzzle.rating <= maxRating &&
+            puzzle.popularity >= minPopularity
+          );
+        }).slice(0, count);
       }
 
       function renderThemes() {
-        const grid = $("themeGrid");
-        grid.innerHTML = "";
-        state.themePresets.forEach((theme) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "theme-chip";
-          button.textContent = theme;
-          button.classList.toggle("active", state.selectedThemes.has(theme));
-          button.addEventListener("click", () => {
-            if (state.selectedThemes.has(theme)) {
-              state.selectedThemes.delete(theme);
-            } else {
-              state.selectedThemes.add(theme);
-            }
-            renderThemes();
-          });
-          grid.appendChild(button);
-        });
+        $("themeGrid").innerHTML = THEME_PRESETS.map((theme) => {
+          const active = selectedThemes.has(theme) ? " active" : "";
+          return `<button class="chip${active}" type="button" data-theme="${theme}">${theme}</button>`;
+        }).join("");
       }
 
-      function renderFiles(files) {
-        const select = $("inputFile");
-        select.innerHTML = "";
-        if (!files.length) {
-          const option = document.createElement("option");
-          option.textContent = "data 폴더에 CSV 파일이 없습니다";
-          option.value = "";
-          select.appendChild(option);
+      function renderPreview() {
+        const puzzles = currentPuzzles();
+        $("previewCount").textContent = `${puzzles.length} puzzle${puzzles.length === 1 ? "" : "s"}`;
+        $("puzzleGrid").innerHTML = puzzles.map((puzzle, index) => `
+          <article class="puzzle-card">
+            ${boardMarkup(puzzle)}
+            <div class="puzzle-copy">
+              <div class="puzzle-title">${index + 1}. ${puzzle.id}</div>
+              <div class="muted">Rating ${puzzle.rating} · Popularity ${puzzle.popularity}</div>
+              <div class="muted">${puzzle.opening}</div>
+              <div class="tags">
+                ${puzzle.themes.slice(0, 5).map((theme) => `<span class="tag">${theme}</span>`).join("")}
+              </div>
+              <div class="muted">Answer: ${solutionMoves(puzzle)}</div>
+            </div>
+          </article>
+        `).join("");
+
+        const status = $("status");
+        if (puzzles.length) {
+          status.textContent = "Printable HTML을 만들 수 있습니다.";
+          status.classList.remove("error");
+        } else {
+          status.textContent = "조건에 맞는 샘플 퍼즐이 없습니다.";
+          status.classList.add("error");
+        }
+      }
+
+      function printableHtml() {
+        const puzzles = currentPuzzles();
+        const title = $("sheetTitle").value.trim() || "BlunderMate Lab Puzzle Set";
+        const layout = $("layout").value;
+        const includeAnswers = $("includeAnswers").checked || layout === "answers";
+        const isCards = layout === "cards";
+        const puzzleSection = puzzles.map((puzzle, index) => `
+          <article class="${isCards ? "print-card" : "print-row"}">
+            ${boardMarkup(puzzle)}
+            <div>
+              <h2>${index + 1}. ${puzzle.id}</h2>
+              <p>Rating ${puzzle.rating} · Popularity ${puzzle.popularity}</p>
+              <p>${puzzle.opening}</p>
+              <p>${puzzle.themes.join(" · ")}</p>
+            </div>
+          </article>
+        `).join("");
+        const answerSection = includeAnswers ? `
+          <section class="answers">
+            <h2>Answers</h2>
+            ${puzzles.map((puzzle, index) => `
+              <p><strong>${index + 1}. ${puzzle.id}</strong> ${solutionMoves(puzzle)}</p>
+            `).join("")}
+          </section>
+        ` : "";
+
+        return `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>${title}</title>
+  <style>
+    body {
+      color: #171f25;
+      font-family: Arial, "Malgun Gothic", sans-serif;
+      margin: 28px;
+    }
+    header {
+      border-bottom: 1px solid #ccd7d7;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+    }
+    h1 { font-size: 28px; margin: 0 0 4px; }
+    h2 { font-size: 17px; margin: 0 0 8px; }
+    p { margin: 0 0 6px; }
+    .sheet {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: ${isCards ? "repeat(2, minmax(0, 1fr))" : "1fr"};
+    }
+    .print-row,
+    .print-card {
+      border: 1px solid #cfdada;
+      border-radius: 8px;
+      break-inside: avoid;
+      display: grid;
+      gap: 14px;
+      padding: 14px;
+    }
+    .print-row { grid-template-columns: 220px minmax(0, 1fr); }
+    .print-card {
+      aspect-ratio: 1;
+      align-content: start;
+      grid-template-columns: 1fr;
+    }
+    .print-card .board { max-width: 330px; }
+    .board {
+      aspect-ratio: 1;
+      border: 1px solid #6d553f;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      width: 100%;
+    }
+    .square {
+      align-items: center;
+      display: flex;
+      font-family: "Segoe UI Symbol", "Arial Unicode MS", serif;
+      font-size: 30px;
+      justify-content: center;
+      line-height: 1;
+    }
+    .light { background: #f0d9b5; }
+    .dark { background: #b58863; }
+    .last { box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65); }
+    .answers {
+      break-before: page;
+      margin-top: 28px;
+    }
+    @media print {
+      body { margin: 14mm; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>${title}</h1>
+    <p>Generated by BlunderMate Lab static MVP</p>
+  </header>
+  <main class="sheet">${puzzleSection}</main>
+  ${answerSection}
+</body>
+</html>`;
+      }
+
+      function openPrintable() {
+        const puzzles = currentPuzzles();
+        if (!puzzles.length) {
+          $("status").textContent = "먼저 조건에 맞는 퍼즐을 선택하세요.";
+          $("status").classList.add("error");
           return;
         }
-        files.forEach((file) => {
-          const option = document.createElement("option");
-          option.value = file.name;
-          option.textContent = `${file.name} (${formatSize(file.size)})`;
-          select.appendChild(option);
-        });
-      }
 
-      function renderOutputs(files) {
-        const list = $("outputList");
-        list.innerHTML = "";
-        if (!files.length) {
-          list.innerHTML = "<div class=\"empty\">아직 생성된 파일이 없습니다.</div>";
+        const win = window.open("", "_blank");
+        if (!win) {
+          $("status").textContent = "새 창이 차단되었습니다. HTML 다운로드를 사용하세요.";
+          $("status").classList.add("error");
           return;
         }
-        files.forEach((file) => {
-          const item = document.createElement("div");
-          item.className = "file-item";
-          item.innerHTML = `
-            <a href="${file.url}" target="_blank" rel="noreferrer">${file.name}</a>
-            <div class="muted">${formatSize(file.size)}</div>
-          `;
-          list.appendChild(item);
-        });
+        win.document.open();
+        win.document.write(printableHtml());
+        win.document.close();
+        win.focus();
+        setTimeout(() => win.print(), 350);
       }
 
-      async function refresh() {
-        const response = await fetch("/api/status");
-        const data = await response.json();
-        state.themePresets = data.themePresets || [];
+      function downloadPrintable() {
+        const html = printableHtml();
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "blundermate-lab-puzzle-sheet.html";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function resetFilters() {
+        selectedThemes.clear();
+        selectedThemes.add("fork");
+        $("layout").value = "worksheet";
+        $("matchMode").value = "any";
+        $("minRating").value = 1200;
+        $("maxRating").value = 2800;
+        $("minPopularity").value = 80;
+        $("count").value = 3;
+        $("includeAnswers").checked = true;
         renderThemes();
-        renderFiles(data.dataFiles || []);
-        renderOutputs(data.outputFiles || []);
-        setStatus("조건을 고르고 PDF 만들기를 누르면 됩니다.");
+        renderPreview();
       }
 
-      function numberOrEmpty(id) {
-        const value = $(id).value.trim();
-        return value === "" ? "" : Number(value);
-      }
+      $("themeGrid").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-theme]");
+        if (!button) return;
+        const theme = button.dataset.theme;
+        if (selectedThemes.has(theme)) selectedThemes.delete(theme);
+        else selectedThemes.add(theme);
+        renderThemes();
+        renderPreview();
+      });
 
-      async function generatePdf() {
-        const button = $("generate");
-        const resultLinks = $("resultLinks");
-        resultLinks.innerHTML = "";
-        button.disabled = true;
-        setStatus("퍼즐을 고르고 PDF를 만드는 중입니다...");
+      ["layout", "matchMode", "minRating", "maxRating", "minPopularity", "count", "includeAnswers"].forEach((id) => {
+        $(id).addEventListener("input", renderPreview);
+        $(id).addEventListener("change", renderPreview);
+      });
 
-        const payload = {
-          input: $("inputFile").value,
-          title: $("title").value,
-          layout: $("layout").value,
-          themes: Array.from(state.selectedThemes),
-          customTheme: $("customTheme").value,
-          match: $("match").value,
-          minRating: numberOrEmpty("minRating"),
-          maxRating: numberOrEmpty("maxRating"),
-          minPopularity: numberOrEmpty("minPopularity"),
-          count: numberOrEmpty("count"),
-          seed: numberOrEmpty("seed"),
-          htmlOnly: $("htmlOnly").checked,
-          solutionsAtEnd: $("solutionsAtEnd").checked,
-          splitOutput: $("splitOutput").checked,
-        };
+      $("printButton").addEventListener("click", openPrintable);
+      $("downloadButton").addEventListener("click", downloadPrintable);
+      $("resetButton").addEventListener("click", resetFilters);
 
-        try {
-          const response = await fetch("/api/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          const data = await response.json();
-          if (!data.ok) throw new Error(data.error || "PDF 생성에 실패했습니다.");
-
-          setStatus(`${data.count}문제를 생성했습니다.`);
-          if (data.questionsPdfUrl && data.answersPdfUrl) {
-            resultLinks.innerHTML += `<a href="${data.questionsPdfUrl}" target="_blank" rel="noreferrer">문제지 PDF 열기</a>`;
-            resultLinks.innerHTML += `<a href="${data.answersPdfUrl}" target="_blank" rel="noreferrer">정답지 PDF 열기</a>`;
-          } else if (data.pdfUrl) {
-            resultLinks.innerHTML += `<a href="${data.pdfUrl}" target="_blank" rel="noreferrer">PDF 열기</a>`;
-          }
-          if (data.questionsHtmlUrl && data.answersHtmlUrl) {
-            resultLinks.innerHTML += `<a href="${data.questionsHtmlUrl}" target="_blank" rel="noreferrer">문제지 HTML 열기</a>`;
-            resultLinks.innerHTML += `<a href="${data.answersHtmlUrl}" target="_blank" rel="noreferrer">정답지 HTML 열기</a>`;
-          } else if (data.htmlUrl) {
-            resultLinks.innerHTML += `<a href="${data.htmlUrl}" target="_blank" rel="noreferrer">HTML 열기</a>`;
-          }
-          renderOutputs(data.outputFiles || []);
-        } catch (error) {
-          setStatus(error.message, true);
-        } finally {
-          button.disabled = false;
-        }
-      }
-
-      $("generate").addEventListener("click", generatePdf);
-      $("refresh").addEventListener("click", refresh);
-      refresh();
+      renderThemes();
+      renderPreview();
     </script>
   </body>
 </html>

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo \"No install step for static Lab MVP\"",
+  "buildCommand": "echo \"Using committed web/ directory\"",
+  "outputDirectory": "web",
+  "cleanUrls": true,
+  "trailingSlash": false
+}
