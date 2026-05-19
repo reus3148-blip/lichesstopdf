@@ -483,9 +483,10 @@
             <div class="field">
               <label for="layout">양식</label>
               <select id="layout">
-                <option value="worksheet">Puzzle sheet</option>
-                <option value="answers">Answer sheet</option>
-                <option value="cards">Instagram cards</option>
+                <option value="worksheet">1문제 / 쪽</option>
+                <option value="duo">2문제 / 쪽</option>
+                <option value="answers">정답지</option>
+                <option value="cards">인스타 카드</option>
               </select>
             </div>
             <div class="field">
@@ -888,6 +889,7 @@
         const layout = $("layout").value;
         const includeAnswers = $("includeAnswers").checked || layout === "answers";
         const isCards = layout === "cards";
+        const isDuo = layout === "duo";
         const total = puzzles.length;
 
         const answerSection = includeAnswers ? `
@@ -924,6 +926,35 @@
         }
 
         const levelLabel = (DIFFICULTY[$("difficulty").value] || DIFFICULTY.intermediate).label;
+
+        if (isDuo) {
+          const items = puzzles.map((puzzle, index) => {
+            const turn = turnInfo(puzzle.fen);
+            return `
+            <div class="duo-item">
+              <div class="duo-head">
+                <span>문제 ${index + 1} / ${total}</span>
+                <span class="duo-turn"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)}</span>
+                <span>난이도: ${levelLabel}</span>
+              </div>
+              <div class="duo-body">
+                <div class="duo-board">${boardMarkup(puzzle, true)}</div>
+                <div class="duo-work">
+                  <div class="work-title">풀이</div>
+                  <div class="ruled duo-ruled"></div>
+                  <div class="final-row"><span>최종 수</span><div class="final-line"></div></div>
+                </div>
+              </div>
+            </div>
+          `;
+          });
+          const duoPages = [];
+          for (let i = 0; i < items.length; i += 2) {
+            duoPages.push(`<section class="page duo-page">${items.slice(i, i + 2).join("")}</section>`);
+          }
+          return { title: title, isCards: false, body: duoPages.join("") + answerSection };
+        }
+
         const pages = puzzles.map((puzzle, index) => {
           const turn = turnInfo(puzzle.fen);
           return `
@@ -993,6 +1024,24 @@
     .final-row { align-items: center; display: grid; gap: 5mm; grid-template-columns: 24mm 1fr; }
     .final-row span { font-size: 11px; font-weight: 700; }
     .final-line { border-bottom: 2px solid #111827; height: 10mm; }
+    .duo-page { display: grid; gap: 9mm; grid-template-rows: 1fr 1fr; }
+    .duo-item { display: grid; grid-template-rows: auto 1fr; }
+    .duo-head {
+      align-items: center; border-bottom: 1px solid #1f2933;
+      display: grid; font-size: 11px; font-weight: 700;
+      grid-template-columns: 1fr auto 1fr; padding-bottom: 2.5mm;
+    }
+    .duo-head span:last-child { text-align: right; }
+    .duo-turn {
+      align-items: center; display: flex; font-size: 13px;
+      gap: 6px; justify-self: center;
+    }
+    .duo-turn .dot { height: 11px; width: 11px; }
+    .duo-body { display: grid; gap: 7mm; grid-template-columns: auto 1fr; margin-top: 4mm; }
+    .duo-board { align-self: start; }
+    .duo-page .board { width: 82mm; }
+    .duo-work { display: grid; gap: 3mm; grid-template-rows: auto 1fr auto; }
+    .duo-ruled { height: auto; }
     .board-frame {
       background: #2b2b2b; display: grid;
       grid-template-columns: 6mm auto 6mm; grid-template-rows: 5mm auto 5mm;
