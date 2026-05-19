@@ -484,7 +484,7 @@
               <label for="layout">양식</label>
               <select id="layout">
                 <option value="worksheet">1문제 / 쪽</option>
-                <option value="duo">2문제 / 쪽</option>
+                <option value="duo" selected>2문제 / 쪽</option>
                 <option value="answers">정답지</option>
                 <option value="cards">인스타 카드</option>
               </select>
@@ -1024,8 +1024,9 @@
     .final-row { align-items: center; display: grid; gap: 5mm; grid-template-columns: 24mm 1fr; }
     .final-row span { font-size: 11px; font-weight: 700; }
     .final-line { border-bottom: 2px solid #111827; height: 10mm; }
-    .duo-page { display: grid; gap: 9mm; grid-template-rows: 1fr 1fr; }
-    .duo-item { display: grid; grid-template-rows: auto 1fr; }
+    .duo-page { display: grid; grid-template-rows: 1fr 1fr; height: 297mm; padding: 0; }
+    .duo-item { display: grid; grid-template-rows: auto 1fr; padding: 12mm; }
+    .duo-item:first-child { border-bottom: 1px dashed #d4dadf; }
     .duo-head {
       align-items: center; border-bottom: 1px solid #1f2933;
       display: grid; font-size: 11px; font-weight: 700;
@@ -1121,7 +1122,7 @@
       function resetFilters() {
         selectedThemes.clear();
         selectedThemes.add("fork");
-        $("layout").value = "worksheet";
+        $("layout").value = "duo";
         $("pieceSet").value = "cburnett";
         $("matchMode").value = "any";
         $("difficulty").value = "intermediate";
