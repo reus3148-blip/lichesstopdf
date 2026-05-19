@@ -932,14 +932,14 @@
             const turn = turnInfo(puzzle.fen);
             return `
             <div class="duo-item">
-              <div class="duo-head">
-                <span>문제 ${index + 1} / ${total}</span>
-                <span class="duo-turn"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)}</span>
-                <span>난이도: ${levelLabel}</span>
-              </div>
-              <div class="duo-body">
+              <div class="duo-left">
+                <div class="duo-head">
+                  <div class="duo-meta"><span>문제 ${index + 1} / ${total}</span><span>난이도: ${levelLabel}</span></div>
+                  <div class="duo-turn"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)}</div>
+                </div>
                 <div class="duo-board">${boardMarkup(puzzle, true)}</div>
               </div>
+              <div class="duo-right"></div>
             </div>
           `;
           });
@@ -1020,25 +1020,28 @@
     .final-row span { font-size: 11px; font-weight: 700; }
     .final-line { border-bottom: 2px solid #111827; height: 10mm; }
     .duo-page { display: grid; grid-template-rows: 1fr 1fr; height: 297mm; padding: 0; }
-    .duo-item { display: grid; grid-template-rows: auto 1fr; padding: 12mm; }
+    .duo-item { display: grid; grid-template-columns: 105mm 105mm; }
     .duo-item:first-child { border-bottom: 1px dashed #d4dadf; }
+    .duo-left {
+      border-right: 1px dashed #d4dadf;
+      display: grid; grid-template-rows: auto 1fr; padding: 6mm 4mm 6mm 6mm;
+    }
+    .duo-right { padding: 6mm 6mm 6mm 4mm; }
     .duo-head {
-      align-items: center; border-bottom: 1px solid #1f2933;
-      display: grid; font-size: 11px; font-weight: 700;
-      grid-template-columns: 1fr auto 1fr; padding-bottom: 2.5mm;
+      border-bottom: 1px solid #ccd7d7; display: grid;
+      gap: 1.5mm; margin-bottom: 4mm; padding-bottom: 2mm;
     }
-    .duo-head span:last-child { text-align: right; }
-    .duo-turn {
-      align-items: center; display: flex; font-size: 13px;
-      gap: 6px; justify-self: center;
+    .duo-meta {
+      color: #52606d; display: flex; font-size: 10px;
+      font-weight: 700; justify-content: space-between;
     }
+    .duo-turn { align-items: center; display: flex; font-size: 13px; font-weight: 700; gap: 6px; }
     .duo-turn .dot { height: 11px; width: 11px; }
-    .duo-body { display: grid; gap: 7mm; grid-template-columns: auto 1fr; margin-top: 4mm; }
-    .duo-board { align-self: start; }
-    .duo-page .board { width: 82mm; }
+    .duo-board { align-items: center; display: flex; justify-content: center; }
+    .duo-page .board { width: 86mm; }
     .board-frame {
       display: grid;
-      grid-template-columns: 6mm auto 6mm; grid-template-rows: 5mm auto 5mm;
+      grid-template-columns: 4mm auto 4mm; grid-template-rows: 4mm auto 4mm;
     }
     .board-frame .board { grid-column: 2; grid-row: 2; }
     .bf-files { display: grid; grid-column: 2; grid-template-columns: repeat(8, 1fr); }
