@@ -778,11 +778,9 @@
         const files = cols.map((col) => `<span>${"abcdefgh"[col]}</span>`).join("");
         const ranks = rows.map((row) => `<span>${8 - row}</span>`).join("");
         return `<div class="board-frame">` +
-          `<div class="bf-files bf-top">${files}</div>` +
-          `<div class="bf-ranks bf-left">${ranks}</div>` +
+          `<div class="bf-left">${ranks}</div>` +
           board +
-          `<div class="bf-ranks bf-right">${ranks}</div>` +
-          `<div class="bf-files bf-bottom">${files}</div>` +
+          `<div class="bf-bottom">${files}</div>` +
           `</div>`;
       }
 
@@ -933,11 +931,9 @@
             return `
             <div class="duo-item">
               <div class="duo-left">
-                <div class="duo-head">
-                  <div class="duo-meta"><span>문제 ${index + 1} / ${total}</span><span>난이도: ${levelLabel}</span></div>
-                  <div class="duo-turn"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)}</div>
-                </div>
+                <div class="duo-code">${puzzle.id}</div>
                 <div class="duo-board">${boardMarkup(puzzle, true)}</div>
+                <div class="duo-info"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)} · 난이도 ${levelLabel}</div>
               </div>
               <div class="duo-right"></div>
             </div>
@@ -1023,34 +1019,25 @@
     .duo-item { display: grid; grid-template-columns: 105mm 105mm; }
     .duo-item:first-child { border-bottom: 1px dashed #d4dadf; }
     .duo-left {
-      border-right: 1px dashed #d4dadf;
-      display: grid; grid-template-rows: auto 1fr; padding: 6mm 4mm 6mm 6mm;
+      align-content: center; border-right: 1px dashed #d4dadf;
+      display: grid; gap: 4mm; padding: 6mm 4mm 6mm 6mm;
     }
     .duo-right { padding: 6mm 6mm 6mm 4mm; }
-    .duo-head {
-      border-bottom: 1px solid #ccd7d7; display: grid;
-      gap: 1.5mm; margin-bottom: 4mm; padding-bottom: 2mm;
+    .duo-code { color: #172026; font-size: 14px; font-weight: 700; }
+    .duo-board { display: flex; justify-content: center; }
+    .duo-info {
+      align-items: center; color: #333; display: flex;
+      font-size: 12px; font-weight: 600; gap: 6px; justify-content: center;
     }
-    .duo-meta {
-      color: #52606d; display: flex; font-size: 10px;
-      font-weight: 700; justify-content: space-between;
-    }
-    .duo-turn { align-items: center; display: flex; font-size: 13px; font-weight: 700; gap: 6px; }
-    .duo-turn .dot { height: 11px; width: 11px; }
-    .duo-board { align-items: center; display: flex; justify-content: center; }
-    .duo-page .board { width: 86mm; }
+    .duo-page .board { width: 90mm; }
     .board-frame {
       display: grid;
-      grid-template-columns: 4mm auto 4mm; grid-template-rows: 4mm auto 4mm;
+      grid-template-columns: 4mm auto; grid-template-rows: auto 4mm;
     }
-    .board-frame .board { grid-column: 2; grid-row: 2; }
-    .bf-files { display: grid; grid-column: 2; grid-template-columns: repeat(8, 1fr); }
-    .bf-ranks { display: grid; grid-row: 2; grid-template-rows: repeat(8, 1fr); }
-    .bf-top { grid-row: 1; }
-    .bf-bottom { grid-row: 3; }
-    .bf-left { grid-column: 1; }
-    .bf-right { grid-column: 3; }
-    .bf-files span, .bf-ranks span {
+    .board-frame .board { grid-column: 2; grid-row: 1; }
+    .bf-left { display: grid; grid-column: 1; grid-row: 1; grid-template-rows: repeat(8, 1fr); }
+    .bf-bottom { display: grid; grid-column: 2; grid-row: 2; grid-template-columns: repeat(8, 1fr); }
+    .bf-left span, .bf-bottom span {
       align-items: center; color: #333; display: flex;
       font-size: 9px; font-weight: 700; justify-content: center;
     }
