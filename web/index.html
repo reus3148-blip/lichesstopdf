@@ -40,6 +40,26 @@
         margin: 0;
       }
 
+      .lookup-bar {
+        align-items: center;
+        background: var(--soft);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        padding: 9px 24px;
+      }
+
+      .lookup-bar label {
+        color: var(--teal-2);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .lookup-bar input {
+        width: 150px;
+      }
+
       button,
       input,
       select {
@@ -456,6 +476,11 @@
     </style>
   </head>
   <body>
+    <div class="lookup-bar">
+      <label for="puzzleLookup">퍼즐 코드로 Lichess 열기</label>
+      <input id="puzzleLookup" type="text" placeholder="예: PDmQk" maxlength="40">
+      <button id="lookupButton" class="primary" type="button">열기</button>
+    </div>
     <main class="shell">
       <header class="topbar">
         <div class="brand">
@@ -1135,6 +1160,18 @@
       $("loadButton").addEventListener("click", loadPuzzles);
       $("printButton").addEventListener("click", openPrintable);
       $("resetButton").addEventListener("click", resetFilters);
+
+      function openPuzzleLookup() {
+        const raw = $("puzzleLookup").value.trim();
+        if (!raw) return;
+        const code = raw.split("/").pop().split(/[?#]/)[0].replace(/[^A-Za-z0-9]/g, "");
+        if (code) window.open(`https://lichess.org/training/${code}`, "_blank", "noopener");
+      }
+
+      $("lookupButton").addEventListener("click", openPuzzleLookup);
+      $("puzzleLookup").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") openPuzzleLookup();
+      });
 
       renderThemes();
       loadPuzzles();
