@@ -431,6 +431,7 @@
       }
 
       .tags {
+        align-items: center;
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
@@ -441,7 +442,7 @@
         border: 1px solid #d3dce6;
         border-radius: 999px;
         color: #34495f;
-        display: inline-flex;
+        display: inline-block;
         font-size: 11px;
         font-weight: 600;
         line-height: 1;
@@ -906,9 +907,17 @@
         const answerSection = includeAnswers ? `
           <section class="answers">
             <h2>정답</h2>
-            ${puzzles.map((puzzle, index) => `
-              <p><strong>${index + 1}. ${puzzle.id}</strong> ${solutionMoves(puzzle)}</p>
-            `).join("")}
+            ${puzzles.map((puzzle, index) => {
+              const themes = Array.isArray(puzzle.themes) && puzzle.themes.length
+                ? `<div class="answer-themes">테마: ${puzzle.themes.join(" · ")}</div>`
+                : "";
+              return `
+                <div class="answer-item">
+                  <p class="answer-main"><strong>${index + 1}. ${puzzle.id}</strong> ${solutionMoves(puzzle)}</p>
+                  ${themes}
+                </div>
+              `;
+            }).join("")}
           </section>
         ` : "";
 
@@ -941,10 +950,15 @@
         if (isDuo) {
           const items = puzzles.map((puzzle, index) => {
             const turn = turnInfo(puzzle.fen);
+            const metaParts = [`Rating ${puzzle.rating}`];
+            if (puzzle.opening) metaParts.push(puzzle.opening);
             return `
             <div class="duo-item">
               <div class="duo-left">
-                <div class="duo-code">${puzzle.id}</div>
+                <div class="duo-header">
+                  <div class="duo-code">${index + 1}. ${puzzle.id}</div>
+                  <div class="duo-meta">${metaParts.join(" · ")}</div>
+                </div>
                 <div class="duo-board">${boardMarkup(puzzle, true)}</div>
                 <div class="duo-info"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)} · 난이도 ${levelLabel}</div>
               </div>
@@ -1036,7 +1050,9 @@
       display: grid; gap: 4mm; padding: 6mm 4mm 6mm 6mm;
     }
     .duo-right { padding: 6mm 6mm 6mm 4mm; }
-    .duo-code { color: #172026; font-size: 14px; font-weight: 700; padding-left: 4mm; }
+    .duo-header { display: grid; gap: 1mm; padding-left: 4mm; }
+    .duo-code { color: #172026; font-size: 14px; font-weight: 700; }
+    .duo-meta { color: #555; font-size: 11px; }
     .duo-board { display: flex; justify-content: flex-start; }
     .duo-info {
       align-items: center; color: #333; display: flex;
@@ -1089,6 +1105,9 @@
     .dot.black { background: #333; }
     .dot.white { background: #ffffff; }
     .answers { break-before: page; padding: 14mm; }
+    .answer-item { margin-bottom: 5mm; }
+    .answer-main { font-size: 13px; margin: 0 0 1mm; }
+    .answer-themes { color: #666; font-size: 11px; padding-left: 6mm; }
     @media print { body { margin: ${isCards ? "14mm" : "0"}; } }
   </style>
 </head>
