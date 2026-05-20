@@ -40,30 +40,42 @@
         margin: 0;
       }
 
-      .lookup-bar {
-        align-items: center;
-        background: var(--soft);
-        border-bottom: 1px solid var(--line);
-        display: flex;
-        flex-wrap: wrap;
-        gap: 9px;
-        padding: 9px 24px;
-      }
-
-      .lookup-bar label {
-        color: var(--teal-2);
-        font-size: 13px;
-        font-weight: 700;
-      }
-
-      .lookup-bar input {
-        width: 150px;
-      }
-
       button,
       input,
       select {
         font: inherit;
+      }
+
+      .header-lookup {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+
+      .header-lookup input {
+        background: #fff;
+        border: 1px solid #c4d1d1;
+        border-radius: 6px;
+        height: 36px;
+        padding: 6px 10px;
+        width: 200px;
+      }
+
+      .header-lookup button {
+        background: #fff;
+        border: 1px solid #b8c8c8;
+        border-radius: 6px;
+        color: var(--ink);
+        cursor: pointer;
+        font-weight: 700;
+        height: 36px;
+        min-height: 36px;
+        padding: 0 14px;
+        white-space: nowrap;
+      }
+
+      .header-lookup button:hover {
+        background: var(--soft);
       }
 
       button {
@@ -77,8 +89,8 @@
 
       .shell {
         margin: 0 auto;
-        max-width: 1240px;
-        padding: 24px;
+        max-width: 1320px;
+        padding: 16px 24px 24px;
       }
 
       .topbar {
@@ -87,12 +99,13 @@
         display: flex;
         gap: 18px;
         justify-content: space-between;
-        padding: 6px 0 18px;
+        padding: 4px 0 12px;
       }
 
       .brand {
-        display: grid;
-        gap: 2px;
+        align-items: baseline;
+        display: flex;
+        gap: 12px;
       }
 
       .brand-mark {
@@ -109,29 +122,22 @@
       }
 
       h1 {
-        font-size: 30px;
-        line-height: 1.08;
-      }
-
-      .top-meta {
-        color: var(--muted);
-        max-width: 540px;
-        overflow-wrap: anywhere;
-        text-align: right;
+        font-size: 20px;
+        line-height: 1.1;
       }
 
       .workspace {
         display: grid;
-        gap: 18px;
-        grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+        gap: 20px;
+        grid-template-columns: minmax(460px, 540px) minmax(0, 1fr);
         margin-top: 22px;
       }
 
       .surface {
         background: var(--paper);
         border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 18px;
+        border-radius: 10px;
+        padding: 22px 24px;
       }
 
       .section-title {
@@ -140,11 +146,11 @@
         flex-wrap: wrap;
         gap: 9px;
         justify-content: space-between;
-        margin-bottom: 14px;
+        margin-bottom: 18px;
       }
 
       .section-title h2 {
-        font-size: 17px;
+        font-size: 19px;
       }
 
       .pill {
@@ -175,8 +181,9 @@
 
       label {
         color: var(--muted);
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
+        letter-spacing: 0.02em;
       }
 
       input,
@@ -191,40 +198,87 @@
         width: 100%;
       }
 
-      .theme-grid {
+      .control {
         display: grid;
-        gap: 11px;
-        margin-top: 2px;
+        gap: 8px;
       }
 
-      .theme-group-name {
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 700;
-        margin-bottom: 5px;
+      .control + .control {
+        margin-top: 18px;
       }
 
-      .theme-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px;
+      .control-row {
+        align-items: center;
+        grid-template-columns: auto 96px;
+        justify-content: start;
       }
 
-      .chip {
-        background: #eef4f4;
-        border: 1px solid #c7d9d8;
-        border-radius: 999px;
-        color: #24413f;
+      .control-row label {
+        margin-right: 10px;
+      }
+
+      .control-row input {
+        width: 96px;
+      }
+
+      .segment {
+        background: #f3f7f6;
+        border: 1px solid #c4d1d1;
+        border-radius: 8px;
+        display: grid;
+        gap: 0;
+        grid-auto-columns: 1fr;
+        grid-auto-flow: column;
+        overflow: hidden;
+      }
+
+      .segment button {
+        background: transparent;
+        border: 0;
+        border-right: 1px solid #d5dfdf;
+        color: var(--ink);
         cursor: pointer;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
-        padding: 6px 10px;
+        line-height: 1.15;
+        min-height: 48px;
+        overflow: hidden;
+        padding: 10px 6px;
+        text-overflow: ellipsis;
+        transition: background 0.12s ease, color 0.12s ease;
+        white-space: nowrap;
       }
 
-      .chip.active {
+      .segment button:last-child {
+        border-right: 0;
+      }
+
+      .segment button:hover:not(.active) {
+        background: #e6efed;
+      }
+
+      .segment button.active {
         background: var(--teal);
-        border-color: var(--teal);
         color: #fff;
+      }
+
+      .sub-wrap {
+        margin-top: 8px;
+      }
+
+      .sub-wrap[hidden] {
+        display: none;
+      }
+
+      .sub-wrap .segment {
+        background: #fafcfb;
+      }
+
+      .sub-wrap .segment button {
+        font-size: 13px;
+        font-weight: 600;
+        min-height: 40px;
+        padding: 8px 6px;
       }
 
       .toggle-row {
@@ -391,45 +445,9 @@
         padding: 2px 7px;
       }
 
-      .lab-roadmap {
-        display: grid;
-        gap: 12px;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        margin-top: 18px;
-      }
-
-      .feature {
-        background: var(--paper);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        min-height: 112px;
-        padding: 13px;
-      }
-
-      .feature h3 {
-        font-size: 14px;
-        line-height: 1.25;
-        margin-bottom: 8px;
-      }
-
-      .feature-state {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-      }
-
-      .state-live {
-        color: var(--green);
-      }
-
-      .state-next {
-        color: var(--gold);
-      }
-
       @media (max-width: 1080px) {
         .workspace,
-        .puzzle-grid,
-        .lab-roadmap {
+        .puzzle-grid {
           grid-template-columns: 1fr;
         }
 
@@ -440,10 +458,20 @@
 
       @media (max-width: 680px) {
         .shell {
-          padding: 16px;
+          padding: 12px 14px 16px;
         }
 
-        .topbar,
+        .topbar {
+          align-items: stretch;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .header-lookup input {
+          flex: 1;
+          width: auto;
+        }
+
         .preview-head {
           align-items: start;
           display: grid;
@@ -455,12 +483,10 @@
           justify-content: start;
         }
 
-        .top-meta,
         .preview-count {
           text-align: left;
         }
 
-        .field-grid,
         .puzzle-card {
           grid-template-columns: 1fr;
         }
@@ -476,16 +502,15 @@
     </style>
   </head>
   <body>
-    <div class="lookup-bar">
-      <label for="puzzleLookup">퍼즐 코드로 Lichess 열기</label>
-      <input id="puzzleLookup" type="text" placeholder="예: PDmQk" maxlength="40">
-      <button id="lookupButton" class="primary" type="button">열기</button>
-    </div>
     <main class="shell">
       <header class="topbar">
         <div class="brand">
           <div class="brand-mark">BlunderMate Lab</div>
           <h1>Printable Puzzle Studio</h1>
+        </div>
+        <div class="header-lookup">
+          <input id="puzzleLookup" type="text" placeholder="퍼즐 코드 (예: PDmQk)" maxlength="40" aria-label="퍼즐 코드">
+          <button id="lookupButton" type="button">Lichess 열기</button>
         </div>
       </header>
 
@@ -496,61 +521,28 @@
             <span class="pill">Lichess DB</span>
           </div>
 
-          <div class="field-grid">
-            <div class="field full">
-              <label for="sheetTitle">제목</label>
-              <input id="sheetTitle" value="BlunderMate Lab Puzzle Set">
+          <div class="control">
+            <label>난이도</label>
+            <div id="difficultySegment" class="segment"></div>
+          </div>
+
+          <div class="control">
+            <label>테마</label>
+            <div id="themeMajorSegment" class="segment"></div>
+            <div id="themeSubWrap" class="sub-wrap" hidden>
+              <div id="themeSubSegment" class="segment"></div>
             </div>
-            <div class="field">
-              <label for="layout">양식</label>
-              <select id="layout">
-                <option value="worksheet">1문제 / 쪽</option>
-                <option value="duo" selected>2문제 / 쪽</option>
-                <option value="answers">정답지</option>
-                <option value="cards">인스타 카드</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="pieceSet">기물 세트</label>
-              <select id="pieceSet">
-                <option value="cburnett">cburnett</option>
-                <option value="merida">merida</option>
-                <option value="alpha">alpha</option>
-                <option value="staunty">staunty</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="matchMode">테마 조건</label>
-              <select id="matchMode">
-                <option value="any">하나 이상</option>
-                <option value="all">모두 포함</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="difficulty">난이도</label>
-              <select id="difficulty">
-                <option value="beginner">입문 (~1000)</option>
-                <option value="easy">초급 (1000-1400)</option>
-                <option value="intermediate" selected>중급 (1400-1800)</option>
-                <option value="advanced">고급 (1800-2200)</option>
-                <option value="expert">전문가 (2200+)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="count">문제 수</label>
-              <input id="count" type="number" value="3" min="1" max="12">
-            </div>
+          </div>
+
+          <div class="control control-row">
+            <label for="count">문제 수</label>
+            <input id="count" type="number" value="4" min="1" max="12">
           </div>
 
           <label class="toggle-row">
             <input id="includeAnswers" type="checkbox" checked>
             해답 섹션 포함
           </label>
-
-          <div class="field" style="margin-top: 14px">
-            <label>테마</label>
-            <div id="themeGrid" class="theme-grid"></div>
-          </div>
 
           <div class="actions">
             <button id="loadButton" class="primary" type="button">퍼즐 불러오기</button>
@@ -577,48 +569,45 @@
     <script>
       let PUZZLES = [];
 
+      const DIFFICULTY_ORDER = ["beginner", "intermediate", "advanced", "expert"];
       const DIFFICULTY = {
-        beginner: { label: "입문", min: 0, max: 1000 },
-        easy: { label: "초급", min: 1000, max: 1400 },
+        beginner: { label: "초급", min: 0, max: 1400 },
         intermediate: { label: "중급", min: 1400, max: 1800 },
         advanced: { label: "고급", min: 1800, max: 2200 },
         expert: { label: "전문가", min: 2200, max: 3500 }
       };
 
-      const THEME_GROUPS = [
-        {
-          name: "메이트",
-          themes: [
-            { id: "mateIn1", label: "1수 메이트" },
-            { id: "mateIn2", label: "2수 메이트" },
-            { id: "mateIn3", label: "3수 메이트" },
-            { id: "backRankMate", label: "백랭크 메이트" },
-            { id: "smotheredMate", label: "질식 메이트" }
-          ]
-        },
-        {
-          name: "전술",
-          themes: [
-            { id: "fork", label: "포크" },
-            { id: "pin", label: "핀" },
-            { id: "skewer", label: "스큐어" },
-            { id: "discoveredAttack", label: "디스커버드 어택" },
-            { id: "sacrifice", label: "희생" },
-            { id: "attraction", label: "유인" },
-            { id: "deflection", label: "디플렉션" },
-            { id: "hangingPiece", label: "무방비 기물" }
-          ]
-        },
-        {
-          name: "엔드게임",
-          themes: [
-            { id: "endgame", label: "엔드게임" },
-            { id: "rookEndgame", label: "룩 엔드게임" },
-            { id: "pawnEndgame", label: "폰 엔드게임" },
-            { id: "queenEndgame", label: "퀸 엔드게임" }
-          ]
-        }
+      const THEME_MAJOR = [
+        { id: "random", label: "랜덤" },
+        { id: "tactics", label: "전술" },
+        { id: "mate", label: "메이트" },
+        { id: "endgame", label: "엔드게임" }
       ];
+
+      const THEME_SUB = {
+        tactics: [
+          { id: "random", label: "랜덤", themes: ["fork", "pin", "skewer", "discoveredAttack", "sacrifice", "attraction", "deflection", "hangingPiece"] },
+          { id: "fps", label: "포크·핀·스큐어", themes: ["fork", "pin", "skewer"] },
+          { id: "discovered", label: "디스커버드", themes: ["discoveredAttack"] },
+          { id: "other", label: "기타", themes: ["sacrifice", "attraction", "deflection", "hangingPiece", "xRayAttack", "interference", "clearance", "intermezzo"] }
+        ],
+        mate: [
+          { id: "random", label: "랜덤", themes: ["mate"] },
+          { id: "short", label: "1·2·3수", themes: ["mateIn1", "mateIn2", "mateIn3"] },
+          { id: "long", label: "4·5수", themes: ["mateIn4", "mateIn5"] },
+          { id: "other", label: "기타", themes: ["backRankMate", "smotheredMate", "anastasiaMate", "arabianMate", "bodenMate", "doubleBishopMate", "dovetailMate", "hookMate"] }
+        ],
+        endgame: [
+          { id: "random", label: "랜덤", themes: ["endgame"] },
+          { id: "rook", label: "룩", themes: ["rookEndgame"] },
+          { id: "pawn", label: "폰", themes: ["pawnEndgame"] },
+          { id: "other", label: "기타", themes: ["queenEndgame", "knightEndgame", "bishopEndgame", "queenRookEndgame"] }
+        ]
+      };
+
+      const FIXED_TITLE = "BlunderMate Lab Puzzle Set";
+      const FIXED_LAYOUT = "duo";
+      const FIXED_PIECE_SET = "cburnett";
 
       function pieceCode(char) {
         if (!char) return "";
@@ -626,7 +615,7 @@
       }
 
       function currentPieceSet() {
-        return $("pieceSet").value;
+        return FIXED_PIECE_SET;
       }
 
       function turnInfo(fen) {
@@ -637,7 +626,11 @@
         return { color: color, label: color === "black" ? "흑이 둘 차례" : "백이 둘 차례" };
       }
 
-      const selectedThemes = new Set(["fork"]);
+      const selection = {
+        difficulty: "intermediate",
+        themeMajor: "random",
+        themeSub: { tactics: "random", mate: "random", endgame: "random" }
+      };
       const $ = (id) => document.getElementById(id);
 
       function parseNumber(id, fallback) {
@@ -796,6 +789,14 @@
         status.textContent = "조건이 바뀌었습니다. '퍼즐 불러오기'를 다시 누르세요.";
       }
 
+      function currentThemes() {
+        const major = selection.themeMajor;
+        if (major === "random") return [];
+        const subs = THEME_SUB[major] || [];
+        const sub = subs.find((item) => item.id === selection.themeSub[major]) || subs[0];
+        return sub ? sub.themes.slice() : [];
+      }
+
       async function loadPuzzles() {
         const button = $("loadButton");
         const status = $("status");
@@ -803,13 +804,13 @@
         status.classList.remove("error");
         status.textContent = "퍼즐을 불러오는 중...";
         try {
-          const level = DIFFICULTY[$("difficulty").value] || DIFFICULTY.intermediate;
+          const level = DIFFICULTY[selection.difficulty] || DIFFICULTY.intermediate;
           const body = {
-            themes: Array.from(selectedThemes),
-            match: $("matchMode").value,
+            themes: currentThemes(),
+            match: "any",
             minRating: level.min,
             maxRating: level.max,
-            count: Math.max(1, Math.min(12, parseNumber("count", 3)))
+            count: Math.max(1, Math.min(12, parseNumber("count", 4)))
           };
           const response = await fetch("/api/puzzles", {
             method: "POST",
@@ -830,14 +831,30 @@
         }
       }
 
-      function renderThemes() {
-        $("themeGrid").innerHTML = THEME_GROUPS.map((group) => {
-          const chips = group.themes.map((theme) => {
-            const active = selectedThemes.has(theme.id) ? " active" : "";
-            return `<button class="chip${active}" type="button" data-theme="${theme.id}">${theme.label}</button>`;
-          }).join("");
-          return `<div class="theme-group"><div class="theme-group-name">${group.name}</div><div class="theme-chips">${chips}</div></div>`;
+      function segmentMarkup(items, activeId, dataKey) {
+        return items.map((item) => {
+          const active = item.id === activeId ? " active" : "";
+          return `<button type="button" class="${active.trim()}" data-${dataKey}="${item.id}">${item.label}</button>`;
         }).join("");
+      }
+
+      function renderSegments() {
+        $("difficultySegment").innerHTML = segmentMarkup(
+          DIFFICULTY_ORDER.map((id) => ({ id: id, label: DIFFICULTY[id].label })),
+          selection.difficulty,
+          "difficulty"
+        );
+        $("themeMajorSegment").innerHTML = segmentMarkup(THEME_MAJOR, selection.themeMajor, "major");
+
+        const major = selection.themeMajor;
+        const wrap = $("themeSubWrap");
+        if (major === "random") {
+          wrap.hidden = true;
+          $("themeSubSegment").innerHTML = "";
+        } else {
+          wrap.hidden = false;
+          $("themeSubSegment").innerHTML = segmentMarkup(THEME_SUB[major] || [], selection.themeSub[major], "sub");
+        }
       }
 
       function moveCountLabel(puzzle) {
@@ -875,9 +892,9 @@
 
       function sheetContent() {
         const puzzles = currentPuzzles();
-        const title = $("sheetTitle").value.trim() || "BlunderMate Lab Puzzle Set";
-        const layout = $("layout").value;
-        const includeAnswers = $("includeAnswers").checked || layout === "answers";
+        const title = FIXED_TITLE;
+        const layout = FIXED_LAYOUT;
+        const includeAnswers = $("includeAnswers").checked;
         const isCards = layout === "cards";
         const isDuo = layout === "duo";
         const total = puzzles.length;
@@ -915,7 +932,7 @@
           };
         }
 
-        const levelLabel = (DIFFICULTY[$("difficulty").value] || DIFFICULTY.intermediate).label;
+        const levelLabel = (DIFFICULTY[selection.difficulty] || DIFFICULTY.intermediate).label;
 
         if (isDuo) {
           const items = puzzles.map((puzzle, index) => {
@@ -1095,33 +1112,41 @@
       }
 
       function resetFilters() {
-        selectedThemes.clear();
-        selectedThemes.add("fork");
-        $("layout").value = "duo";
-        $("pieceSet").value = "cburnett";
-        $("matchMode").value = "any";
-        $("difficulty").value = "intermediate";
-        $("count").value = 3;
+        selection.difficulty = "intermediate";
+        selection.themeMajor = "random";
+        selection.themeSub = { tactics: "random", mate: "random", endgame: "random" };
+        $("count").value = 4;
         $("includeAnswers").checked = true;
-        renderThemes();
+        renderSegments();
         loadPuzzles();
       }
 
-      $("themeGrid").addEventListener("click", (event) => {
-        const button = event.target.closest("[data-theme]");
+      $("difficultySegment").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-difficulty]");
         if (!button) return;
-        const theme = button.dataset.theme;
-        if (selectedThemes.has(theme)) selectedThemes.delete(theme);
-        else selectedThemes.add(theme);
-        renderThemes();
+        selection.difficulty = button.dataset.difficulty;
+        renderSegments();
         markStale();
       });
 
-      ["matchMode", "difficulty", "count"].forEach((id) => {
-        $(id).addEventListener("change", markStale);
+      $("themeMajorSegment").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-major]");
+        if (!button) return;
+        selection.themeMajor = button.dataset.major;
+        renderSegments();
+        markStale();
       });
 
-      $("pieceSet").addEventListener("change", renderPreview);
+      $("themeSubSegment").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-sub]");
+        if (!button) return;
+        const major = selection.themeMajor;
+        if (THEME_SUB[major]) selection.themeSub[major] = button.dataset.sub;
+        renderSegments();
+        markStale();
+      });
+
+      $("count").addEventListener("change", markStale);
 
       $("loadButton").addEventListener("click", loadPuzzles);
       $("printButton").addEventListener("click", openPrintable);
@@ -1139,7 +1164,7 @@
         if (event.key === "Enter") openPuzzleLookup();
       });
 
-      renderThemes();
+      renderSegments();
       loadPuzzles();
     </script>
   </body>
