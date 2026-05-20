@@ -441,8 +441,12 @@
         border: 1px solid #d3dce6;
         border-radius: 999px;
         color: #34495f;
-        font-size: 12px;
-        padding: 2px 7px;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1;
+        padding: 4px 9px;
+        white-space: nowrap;
       }
 
       @media (max-width: 1080px) {
@@ -1032,11 +1036,12 @@
       display: grid; gap: 4mm; padding: 6mm 4mm 6mm 6mm;
     }
     .duo-right { padding: 6mm 6mm 6mm 4mm; }
-    .duo-code { color: #172026; font-size: 14px; font-weight: 700; }
-    .duo-board { display: flex; justify-content: center; }
+    .duo-code { color: #172026; font-size: 14px; font-weight: 700; padding-left: 4mm; }
+    .duo-board { display: flex; justify-content: flex-start; }
     .duo-info {
       align-items: center; color: #333; display: flex;
-      font-size: 12px; font-weight: 600; gap: 6px; justify-content: center;
+      font-size: 12px; font-weight: 600; gap: 6px;
+      justify-content: flex-start; padding-left: 4mm;
     }
     .duo-page .board { width: 90mm; }
     .board-frame {
