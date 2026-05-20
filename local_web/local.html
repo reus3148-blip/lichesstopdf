@@ -8,351 +8,178 @@
       :root {
         color-scheme: light;
         --bg: #f5f7f6;
-        --panel: #ffffff;
+        --panel: #fff;
         --ink: #172026;
         --muted: #60717c;
         --line: #d4dfdf;
         --soft: #edf4f3;
         --teal: #176b66;
         --teal-dark: #0f514f;
-        --blue: #315f9f;
         --red: #a23b37;
         --gold: #9a6a16;
       }
-
-      * {
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
       body {
         background: var(--bg);
         color: var(--ink);
-        font-family: Arial, "Malgun Gothic", sans-serif;
-        font-size: 14px;
-        line-height: 1.45;
+        font: 13px/1.4 Arial, "Malgun Gothic", sans-serif;
         margin: 0;
       }
+      button, input, select, textarea { font: inherit; }
+      h1, h2, p { margin: 0; }
 
-      button,
-      input,
-      select,
-      textarea {
-        font: inherit;
-      }
-
-      button {
-        min-height: 40px;
-      }
-
-      a {
-        color: var(--blue);
-        font-weight: 700;
-      }
-
-      .shell {
-        margin: 0 auto;
-        max-width: 1380px;
-        padding: 22px;
-      }
-
+      .shell { margin: 0 auto; max-width: 1380px; padding: 12px 14px; }
       .topbar {
-        align-items: end;
+        align-items: baseline;
         border-bottom: 1px solid var(--line);
         display: flex;
-        gap: 20px;
+        gap: 12px;
         justify-content: space-between;
-        padding-bottom: 16px;
+        padding-bottom: 8px;
       }
-
-      .brand {
-        display: grid;
-        gap: 3px;
-      }
-
-      .brand-kicker {
-        color: var(--teal);
-        font-size: 13px;
-        font-weight: 700;
-      }
-
-      h1,
-      h2,
-      p {
-        margin: 0;
-      }
-
-      h1 {
-        font-size: 28px;
-        line-height: 1.1;
-      }
-
-      .endpoint {
-        color: var(--muted);
-        font-size: 13px;
-        text-align: right;
-      }
+      h1 { color: var(--teal); font-size: 16px; }
+      .endpoint { color: var(--muted); font-size: 11px; }
 
       .layout {
         display: grid;
-        gap: 16px;
-        grid-template-columns: 370px minmax(0, 1fr) 300px;
-        margin-top: 18px;
+        gap: 10px;
+        grid-template-columns: 320px minmax(0, 1fr) 240px;
+        margin-top: 10px;
       }
-
       .panel {
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 16px;
+        border-radius: 6px;
+        padding: 10px;
       }
-
       .panel-title {
         align-items: center;
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
         justify-content: space-between;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
-
-      .panel-title h2 {
-        font-size: 16px;
-      }
-
+      .panel-title h2 { font-size: 13px; }
       .pill {
         background: var(--soft);
         border: 1px solid #c8dcda;
         border-radius: 999px;
         color: var(--teal-dark);
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        padding: 3px 9px;
+        padding: 1px 7px;
       }
 
-      .field-grid {
-        display: grid;
-        gap: 11px;
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .field {
-        display: grid;
-        gap: 5px;
-      }
-
-      .field.full {
-        grid-column: 1 / -1;
-      }
-
-      label {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-      }
-
-      input,
-      select,
-      textarea {
+      .field-grid { display: grid; gap: 6px; grid-template-columns: 1fr 1fr; }
+      .field { display: grid; gap: 2px; }
+      .field.full { grid-column: 1 / -1; }
+      label { color: var(--muted); font-size: 11px; font-weight: 700; }
+      input, select, textarea {
         background: #fff;
         border: 1px solid #c3d1d0;
-        border-radius: 6px;
+        border-radius: 4px;
         color: var(--ink);
         min-width: 0;
-        padding: 8px 10px;
+        padding: 4px 6px;
         width: 100%;
       }
-
-      input,
-      select {
-        height: 40px;
-      }
-
+      input, select { height: 28px; }
       textarea {
-        font-family: Consolas, "Cascadia Mono", monospace;
-        font-size: 12px;
-        line-height: 1.4;
-        min-height: 300px;
+        font: 11px/1.35 Consolas, "Cascadia Mono", monospace;
+        min-height: 180px;
         resize: vertical;
         white-space: pre;
       }
 
-      .theme-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px;
-      }
-
+      .theme-grid { display: flex; flex-wrap: wrap; gap: 4px; }
       .chip {
         background: #eef4f4;
         border: 1px solid #c8d9d8;
         border-radius: 999px;
         color: #24413f;
         cursor: pointer;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        padding: 6px 9px;
+        padding: 2px 7px;
       }
+      .chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
 
-      .chip.active {
-        background: var(--teal);
-        border-color: var(--teal);
-        color: #fff;
-      }
+      .checks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+      .checks label { align-items: center; color: var(--ink); display: flex; font-size: 12px; gap: 4px; }
+      .checks input { height: 14px; width: 14px; }
 
-      .check-row {
-        align-items: center;
-        display: flex;
-        gap: 8px;
-        margin-top: 11px;
-      }
-
-      .check-row input {
-        height: 18px;
-        width: 18px;
-      }
-
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 9px;
-        margin-top: 14px;
-      }
-
-      .primary,
-      .secondary {
-        border-radius: 6px;
+      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      .primary, .secondary {
+        border-radius: 4px;
         cursor: pointer;
         font-weight: 700;
-        padding: 8px 13px;
+        font-size: 12px;
+        padding: 5px 10px;
       }
-
-      .primary {
-        background: var(--teal);
-        border: 1px solid var(--teal);
-        color: #fff;
-      }
-
-      .primary:hover {
-        background: var(--teal-dark);
-      }
-
-      .secondary {
-        background: #fff;
-        border: 1px solid #b7c8c7;
-        color: var(--ink);
-      }
-
-      button:disabled {
-        cursor: wait;
-        opacity: 0.62;
-      }
+      .primary { background: var(--teal); border: 1px solid var(--teal); color: #fff; }
+      .primary:hover { background: var(--teal-dark); }
+      .secondary { background: #fff; border: 1px solid #b7c8c7; color: var(--ink); }
+      button:disabled { cursor: wait; opacity: 0.62; }
 
       .status {
-        border-left: 4px solid var(--teal);
+        border-left: 3px solid var(--teal);
         color: var(--muted);
-        margin-top: 13px;
-        padding: 8px 11px;
+        font-size: 12px;
+        margin-top: 8px;
+        padding: 4px 8px;
       }
-
-      .status.error {
-        border-color: var(--red);
-        color: var(--red);
-      }
-
-      .status.warn {
-        border-color: var(--gold);
-        color: var(--gold);
-      }
+      .status.error { border-color: var(--red); color: var(--red); }
+      .status.warn { border-color: var(--gold); color: var(--gold); }
 
       .preview-table-wrap {
         border: 1px solid var(--line);
-        border-radius: 8px;
-        margin-bottom: 12px;
-        max-height: 260px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        max-height: 220px;
         overflow: auto;
       }
-
-      table {
-        border-collapse: collapse;
-        min-width: 760px;
-        width: 100%;
-      }
-
-      th,
-      td {
+      table { border-collapse: collapse; min-width: 660px; width: 100%; }
+      th, td {
         border-bottom: 1px solid #e2e9e9;
-        padding: 8px 9px;
+        padding: 4px 6px;
         text-align: left;
         vertical-align: top;
       }
-
       th {
         background: #f1f5f5;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
         position: sticky;
         top: 0;
         z-index: 1;
       }
+      td { font-size: 12px; }
 
-      td {
-        font-size: 13px;
-      }
-
-      .output-list {
-        display: grid;
-        gap: 9px;
-      }
-
+      .output-list { display: grid; gap: 4px; }
+      .output-list + .output-list { margin-top: 8px; }
       .output-item {
         border-bottom: 1px solid var(--line);
-        padding-bottom: 9px;
-      }
-
-      .output-item:last-child {
-        border-bottom: 0;
-        padding-bottom: 0;
-      }
-
-      .muted {
-        color: var(--muted);
         font-size: 12px;
+        padding-bottom: 4px;
       }
+      .output-item:last-child { border-bottom: 0; padding-bottom: 0; }
+      .output-item a { color: var(--teal-dark); font-weight: 700; }
+      .muted { color: var(--muted); font-size: 11px; }
 
       @media (max-width: 1160px) {
-        .layout {
-          grid-template-columns: 1fr;
-        }
+        .layout { grid-template-columns: 1fr; }
       }
-
       @media (max-width: 640px) {
-        .shell {
-          padding: 16px;
-        }
-
-        .topbar {
-          align-items: start;
-          display: grid;
-        }
-
-        .endpoint {
-          text-align: left;
-        }
-
-        .field-grid {
-          grid-template-columns: 1fr;
-        }
+        .topbar { align-items: start; flex-direction: column; gap: 4px; }
+        .field-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
     <main class="shell">
       <header class="topbar">
-        <div class="brand">
-          <div class="brand-kicker">BlunderMate Local Lab</div>
-          <h1>Lichess DB Workbench</h1>
-        </div>
-        <div class="endpoint">127.0.0.1:8765 · local backend</div>
+        <h1>BlunderMate · Lichess DB Workbench</h1>
+        <div class="endpoint">127.0.0.1:8765</div>
       </header>
 
       <div class="layout">
@@ -420,21 +247,14 @@
             </div>
           </div>
 
-          <label class="check-row">
-            <input id="htmlOnly" type="checkbox">
-            HTML만 생성
-          </label>
-          <label class="check-row">
-            <input id="splitOutput" type="checkbox" checked>
-            문제지/정답지 분리
-          </label>
-          <label class="check-row">
-            <input id="solutionsAtEnd" type="checkbox" checked>
-            해답을 뒤에 모으기
-          </label>
+          <div class="checks">
+            <label><input id="htmlOnly" type="checkbox">HTML만</label>
+            <label><input id="splitOutput" type="checkbox" checked>문제/정답 분리</label>
+            <label><input id="solutionsAtEnd" type="checkbox" checked>해답 뒤에</label>
+          </div>
 
           <div class="actions">
-            <button id="previewButton" class="primary" type="button">DB에서 가져오기</button>
+            <button id="previewButton" class="primary" type="button">DB 가져오기</button>
             <button id="generateButton" class="secondary" type="button">HTML/PDF 생성</button>
             <button id="refreshButton" class="secondary" type="button">새로고침</button>
           </div>
@@ -451,13 +271,7 @@
           <div class="preview-table-wrap">
             <table>
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Rating</th>
-                  <th>Popularity</th>
-                  <th>Themes</th>
-                  <th>Moves</th>
-                </tr>
+                <tr><th>ID</th><th>Rating</th><th>Pop</th><th>Themes</th><th>Moves</th></tr>
               </thead>
               <tbody id="previewRows">
                 <tr><td colspan="5" class="muted">No rows loaded</td></tr>
@@ -473,39 +287,24 @@
         </section>
 
         <aside class="panel">
-          <div class="panel-title">
-            <h2>Outputs</h2>
-            <span class="pill">output</span>
-          </div>
+          <div class="panel-title"><h2>Outputs</h2><span class="pill">output</span></div>
           <div id="resultLinks" class="output-list"></div>
-          <div style="height: 16px"></div>
           <div id="outputList" class="output-list"></div>
         </aside>
       </div>
     </main>
 
     <script>
-      const state = {
-        selectedThemes: new Set(["fork"]),
-        themePresets: [],
-        dataFiles: [],
-      };
-
+      const state = { selectedThemes: new Set(["fork"]), themePresets: [], dataFiles: [] };
       const $ = (id) => document.getElementById(id);
 
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;");
-      }
+      const escapeHtml = (v) => String(v ?? "")
+        .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
-      function formatSize(bytes) {
-        if (!bytes) return "0 B";
-        if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-      }
+      const formatSize = (b) => !b ? "0 B"
+        : b < 1024 * 1024 ? `${Math.round(b / 1024)} KB`
+        : `${(b / 1024 / 1024).toFixed(1)} MB`;
 
       function setStatus(message, kind = "ok") {
         const status = $("status");
@@ -515,89 +314,81 @@
       }
 
       function renderThemes() {
-        $("themeGrid").innerHTML = state.themePresets.map((theme) => {
-          const active = state.selectedThemes.has(theme) ? " active" : "";
-          return `<button class="chip${active}" type="button" data-theme="${escapeHtml(theme)}">${escapeHtml(theme)}</button>`;
+        $("themeGrid").innerHTML = state.themePresets.map((t) => {
+          const active = state.selectedThemes.has(t) ? " active" : "";
+          return `<button class="chip${active}" type="button" data-theme="${escapeHtml(t)}">${escapeHtml(t)}</button>`;
         }).join("");
       }
 
       function renderDataFiles(files) {
         const select = $("inputFile");
-        select.innerHTML = "";
         if (!files.length) {
           select.innerHTML = "<option value=\"\">data 폴더에 CSV가 없습니다</option>";
           $("dbPill").textContent = "no data";
           return;
         }
-
-        files.forEach((file) => {
-          const option = document.createElement("option");
-          option.value = file.name;
-          option.textContent = `${file.name} (${formatSize(file.size)})`;
-          select.appendChild(option);
-        });
-
-        const fullDb = files.find((file) => file.name === "lichess_db_puzzle.csv.zst");
+        select.innerHTML = files.map((f) =>
+          `<option value="${escapeHtml(f.name)}">${escapeHtml(f.name)} (${formatSize(f.size)})</option>`
+        ).join("");
+        const fullDb = files.find((f) => f.name === "lichess_db_puzzle.csv.zst");
         if (fullDb) select.value = fullDb.name;
         $("dbPill").textContent = fullDb ? "full DB found" : "CSV ready";
       }
 
       function renderOutputs(files) {
-        const list = $("outputList");
-        if (!files.length) {
-          list.innerHTML = "<div class=\"muted\">No generated files</div>";
-          return;
-        }
-
-        list.innerHTML = files.map((file) => `
-          <div class="output-item">
-            <a href="${escapeHtml(file.url)}" target="_blank" rel="noreferrer">${escapeHtml(file.name)}</a>
-            <div class="muted">${formatSize(file.size)}</div>
-          </div>
-        `).join("");
+        $("outputList").innerHTML = !files.length
+          ? "<div class=\"muted\">No generated files</div>"
+          : files.map((f) => `
+            <div class="output-item">
+              <a href="${escapeHtml(f.url)}" target="_blank" rel="noreferrer">${escapeHtml(f.name)}</a>
+              <div class="muted">${formatSize(f.size)}</div>
+            </div>`).join("");
       }
 
       function renderPreviewRows(rows) {
         $("previewCount").textContent = `${rows.length} rows`;
-        if (!rows.length) {
-          $("previewRows").innerHTML = "<tr><td colspan=\"5\" class=\"muted\">No rows loaded</td></tr>";
-          return;
-        }
-
-        $("previewRows").innerHTML = rows.map((row) => `
-          <tr>
-            <td><a href="${escapeHtml(row.GameUrl)}" target="_blank" rel="noreferrer">${escapeHtml(row.PuzzleId)}</a></td>
-            <td>${escapeHtml(row.Rating)}</td>
-            <td>${escapeHtml(row.Popularity)}</td>
-            <td>${escapeHtml(row.Themes)}</td>
-            <td>${escapeHtml(row.Moves)}</td>
-          </tr>
-        `).join("");
+        $("previewRows").innerHTML = !rows.length
+          ? "<tr><td colspan=\"5\" class=\"muted\">No rows loaded</td></tr>"
+          : rows.map((r) => `
+            <tr>
+              <td><a href="${escapeHtml(r.GameUrl)}" target="_blank" rel="noreferrer">${escapeHtml(r.PuzzleId)}</a></td>
+              <td>${escapeHtml(r.Rating)}</td>
+              <td>${escapeHtml(r.Popularity)}</td>
+              <td>${escapeHtml(r.Themes)}</td>
+              <td>${escapeHtml(r.Moves)}</td>
+            </tr>`).join("");
       }
 
-      function numberOrEmpty(id) {
-        const value = $(id).value.trim();
-        return value === "" ? "" : Number(value);
+      function renderResultLinks(data) {
+        const labels = [
+          ["문제지 PDF", data.questionsPdfUrl], ["정답지 PDF", data.answersPdfUrl], ["PDF", data.pdfUrl],
+          ["문제지 HTML", data.questionsHtmlUrl], ["정답지 HTML", data.answersHtmlUrl], ["HTML", data.htmlUrl],
+        ].filter(([, url]) => url);
+        $("resultLinks").innerHTML = !labels.length
+          ? "<div class=\"muted\">No result links</div>"
+          : labels.map(([label, url]) =>
+              `<div class="output-item"><a href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${label}</a></div>`
+            ).join("");
       }
 
-      function payload() {
-        return {
-          input: $("inputFile").value,
-          title: $("title").value,
-          layout: $("layout").value,
-          themes: Array.from(state.selectedThemes),
-          customTheme: $("customTheme").value,
-          match: $("match").value,
-          minRating: numberOrEmpty("minRating"),
-          maxRating: numberOrEmpty("maxRating"),
-          minPopularity: numberOrEmpty("minPopularity"),
-          count: numberOrEmpty("count"),
-          seed: numberOrEmpty("seed"),
-          htmlOnly: $("htmlOnly").checked,
-          splitOutput: $("splitOutput").checked,
-          solutionsAtEnd: $("solutionsAtEnd").checked,
-        };
-      }
+      const numberOrEmpty = (id) => $(id).value.trim() === "" ? "" : Number($(id).value);
+
+      const payload = () => ({
+        input: $("inputFile").value,
+        title: $("title").value,
+        layout: $("layout").value,
+        themes: Array.from(state.selectedThemes),
+        customTheme: $("customTheme").value,
+        match: $("match").value,
+        minRating: numberOrEmpty("minRating"),
+        maxRating: numberOrEmpty("maxRating"),
+        minPopularity: numberOrEmpty("minPopularity"),
+        count: numberOrEmpty("count"),
+        seed: numberOrEmpty("seed"),
+        htmlOnly: $("htmlOnly").checked,
+        splitOutput: $("splitOutput").checked,
+        solutionsAtEnd: $("solutionsAtEnd").checked,
+      });
 
       async function postJson(url, body) {
         const response = await fetch(url, {
@@ -608,6 +399,15 @@
         const data = await response.json();
         if (!data.ok) throw new Error(data.error || "Request failed.");
         return data;
+      }
+
+      async function withButton(id, message, run) {
+        const button = $(id);
+        button.disabled = true;
+        if (message) setStatus(message, "warn");
+        try { await run(); }
+        catch (error) { setStatus(error.message, "error"); }
+        finally { button.disabled = false; }
       }
 
       async function refresh() {
@@ -621,26 +421,30 @@
         setStatus("로컬 DB workbench가 준비되었습니다.");
       }
 
-      async function preview() {
-        const button = $("previewButton");
-        button.disabled = true;
-        setStatus("DB를 스캔하는 중입니다. 전체 .zst는 시간이 조금 걸릴 수 있습니다.", "warn");
-        try {
+      $("themeGrid").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-theme]");
+        if (!button) return;
+        const theme = button.dataset.theme;
+        state.selectedThemes.has(theme)
+          ? state.selectedThemes.delete(theme)
+          : state.selectedThemes.add(theme);
+        renderThemes();
+      });
+
+      $("previewButton").addEventListener("click", () => withButton(
+        "previewButton",
+        "DB를 스캔하는 중입니다. 전체 .zst는 시간이 조금 걸릴 수 있습니다.",
+        async () => {
           const data = await postJson("/api/preview", payload());
           $("csvText").value = data.csvText || "";
           renderPreviewRows(data.puzzles || []);
           setStatus(`${data.input}에서 ${data.count}개 퍼즐을 가져왔습니다.`);
-        } catch (error) {
-          setStatus(error.message, "error");
-        } finally {
-          button.disabled = false;
         }
-      }
+      ));
 
-      async function saveWorkspace() {
-        const button = $("saveButton");
-        button.disabled = true;
-        try {
+      $("saveButton").addEventListener("click", () => withButton(
+        "saveButton", null,
+        async () => {
           const data = await postJson("/api/save-csv", {
             filename: $("workspaceName").value,
             csvText: $("csvText").value,
@@ -648,58 +452,19 @@
           renderDataFiles(data.dataFiles || []);
           $("inputFile").value = data.name;
           setStatus(`${data.name} 저장 완료: ${data.rows} rows`);
-        } catch (error) {
-          setStatus(error.message, "error");
-        } finally {
-          button.disabled = false;
         }
-      }
+      ));
 
-      function renderResultLinks(data) {
-        const links = [];
-        [
-          ["문제지 PDF", data.questionsPdfUrl],
-          ["정답지 PDF", data.answersPdfUrl],
-          ["PDF", data.pdfUrl],
-          ["문제지 HTML", data.questionsHtmlUrl],
-          ["정답지 HTML", data.answersHtmlUrl],
-          ["HTML", data.htmlUrl],
-        ].forEach(([label, url]) => {
-          if (url) links.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${label}</a>`);
-        });
-        $("resultLinks").innerHTML = links.length
-          ? links.map((link) => `<div class="output-item">${link}</div>`).join("")
-          : "<div class=\"muted\">No result links</div>";
-      }
-
-      async function generate() {
-        const button = $("generateButton");
-        button.disabled = true;
-        setStatus("HTML/PDF를 생성하는 중입니다.", "warn");
-        try {
+      $("generateButton").addEventListener("click", () => withButton(
+        "generateButton", "HTML/PDF를 생성하는 중입니다.",
+        async () => {
           const data = await postJson("/api/generate", payload());
           renderResultLinks(data);
           renderOutputs(data.outputFiles || []);
           setStatus(`${data.count}개 퍼즐로 생성했습니다.`);
-        } catch (error) {
-          setStatus(error.message, "error");
-        } finally {
-          button.disabled = false;
         }
-      }
+      ));
 
-      $("themeGrid").addEventListener("click", (event) => {
-        const button = event.target.closest("[data-theme]");
-        if (!button) return;
-        const theme = button.dataset.theme;
-        if (state.selectedThemes.has(theme)) state.selectedThemes.delete(theme);
-        else state.selectedThemes.add(theme);
-        renderThemes();
-      });
-
-      $("previewButton").addEventListener("click", preview);
-      $("saveButton").addEventListener("click", saveWorkspace);
-      $("generateButton").addEventListener("click", generate);
       $("refreshButton").addEventListener("click", refresh);
       $("clearButton").addEventListener("click", () => {
         $("csvText").value = "";

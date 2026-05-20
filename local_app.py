@@ -11,7 +11,7 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from types import SimpleNamespace
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import unquote, urlparse
 
 from make_puzzle_pdf import print_pdf, render_html, render_puzzle, select_puzzles
 
@@ -323,22 +323,6 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
                     "dataFiles": data_files(),
                     "outputFiles": output_files(),
                     "themePresets": THEME_PRESETS,
-                },
-            )
-            return
-
-        if path == "/api/sample-command":
-            query = parse_qs(parsed.query)
-            theme = query.get("theme", ["fork"])[0]
-            json_response(
-                self,
-                HTTPStatus.OK,
-                {
-                    "command": (
-                        ".\\.venv\\Scripts\\python.exe .\\make_puzzle_pdf.py "
-                        f"--input .\\data\\sample_puzzles.csv --theme {theme} --count 2 "
-                        f"--output .\\output\\{slugify(theme)}_sample.pdf"
-                    )
                 },
             )
             return
