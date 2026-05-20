@@ -487,10 +487,6 @@
           <div class="brand-mark">BlunderMate Lab</div>
           <h1>Printable Puzzle Studio</h1>
         </div>
-        <p class="top-meta">
-          lab.blundermate.app — Lichess 퍼즐 데이터베이스에서 조건에 맞는 퍼즐을
-          불러와 인쇄용 PDF 문제지를 만듭니다.
-        </p>
       </header>
 
       <div class="workspace">
@@ -541,10 +537,6 @@
               </select>
             </div>
             <div class="field">
-              <label for="minPopularity">최소 인기도</label>
-              <input id="minPopularity" type="number" value="80">
-            </div>
-            <div class="field">
               <label for="count">문제 수</label>
               <input id="count" type="number" value="3" min="1" max="12">
             </div>
@@ -580,29 +572,6 @@
           <div id="puzzleGrid" class="puzzle-grid"></div>
         </section>
       </div>
-
-      <section class="lab-roadmap" aria-label="Lab feature shelf">
-        <article class="feature">
-          <h3>Puzzle sheet generator</h3>
-          <div class="feature-state state-live">Lichess DB 연동</div>
-        </article>
-        <article class="feature">
-          <h3>Answer sheet generator</h3>
-          <div class="feature-state state-live">Lichess DB 연동</div>
-        </article>
-        <article class="feature">
-          <h3>Instagram carousel export</h3>
-          <div class="feature-state state-next">Prototype next</div>
-        </article>
-        <article class="feature">
-          <h3>Daily calculation set</h3>
-          <div class="feature-state">Planned</div>
-        </article>
-        <article class="feature">
-          <h3>Coach homework sheet</h3>
-          <div class="feature-state">Planned</div>
-        </article>
-      </section>
     </main>
 
     <script>
@@ -840,7 +809,6 @@
             match: $("matchMode").value,
             minRating: level.min,
             maxRating: level.max,
-            minPopularity: parseNumber("minPopularity", 0),
             count: Math.max(1, Math.min(12, parseNumber("count", 3)))
           };
           const response = await fetch("/api/puzzles", {
@@ -886,19 +854,18 @@
             ${boardMarkup(puzzle)}
             <div class="puzzle-copy">
               <div class="puzzle-title">${index + 1}. ${puzzle.id}</div>
-              <div class="muted">Rating ${puzzle.rating} · Popularity ${puzzle.popularity}</div>
+              <div class="muted">Rating ${puzzle.rating}</div>
               <div class="muted">${puzzle.opening}</div>
               <div class="tags">
                 ${puzzle.themes.slice(0, 5).map((theme) => `<span class="tag">${theme}</span>`).join("")}
               </div>
-              <div class="muted">Answer: ${solutionMoves(puzzle)}</div>
             </div>
           </article>
         `).join("");
 
         const status = $("status");
         if (puzzles.length) {
-          status.textContent = "Printable HTML을 만들 수 있습니다.";
+          status.textContent = "";
           status.classList.remove("error");
         } else {
           status.textContent = "조건에 맞는 퍼즐이 없습니다. 조건을 넓혀 보세요.";
@@ -933,7 +900,7 @@
               <div>
                 <h2>${index + 1}. ${puzzle.id}</h2>
                 <p class="to-move"><span class="dot ${turn.color}"></span>${turn.label}</p>
-                <p>Rating ${puzzle.rating} · Popularity ${puzzle.popularity}</p>
+                <p>Rating ${puzzle.rating}</p>
                 <p>${puzzle.opening}</p>
                 <p>${puzzle.themes.join(" · ")}</p>
               </div>
@@ -1134,7 +1101,6 @@
         $("pieceSet").value = "cburnett";
         $("matchMode").value = "any";
         $("difficulty").value = "intermediate";
-        $("minPopularity").value = 80;
         $("count").value = 3;
         $("includeAnswers").checked = true;
         renderThemes();
@@ -1151,7 +1117,7 @@
         markStale();
       });
 
-      ["matchMode", "difficulty", "minPopularity", "count"].forEach((id) => {
+      ["matchMode", "difficulty", "count"].forEach((id) => {
         $(id).addEventListener("change", markStale);
       });
 

@@ -1,9 +1,12 @@
-"""Load a sampled subset of the Lichess puzzle CSV into a Postgres database.
+"""Load Lichess "100/100" puzzles into a Postgres database.
 
-The full Lichess puzzle database has millions of rows and does not fit in a
-small managed Postgres instance. This script streams the CSV once, keeps a
-uniform random sample of the rows that pass the rating/popularity filters
-(reservoir sampling), and bulk-loads that sample into a `puzzles` table.
+By default this keeps every puzzle with popularity == 100 (universally
+upvoted on Lichess). The result is ~407k rows that fit comfortably in a
+small managed Postgres instance with no sampling, so the dataset is fully
+deterministic and the UI can advertise an exact count.
+
+Optional flags can re-enable reservoir sampling or different popularity /
+rating / NbPlays filters when needed.
 
 Run it locally once after creating the database:
 
@@ -119,8 +122,9 @@ def parse_int(value: str, default: int = 0) -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Load sampled Lichess puzzles into Postgres.")
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT, help="Lichess puzzle CSV or .csv.zst file.")
-    parser.add_argument("--limit", type=int, default=200000, help="Number of puzzles to keep. Use 0 to keep all matching rows.")
-    parser.add_argument("--min-popularity", type=int, default=80, help="Skip puzzles below this popularity score.")
+    parser.add_argument("--limit", type=int, default=0, help="Number of puzzles to keep. Use 0 to keep all matching rows.")
+    parser.add_argument("--min-popularity", type=int, default=100, help="Skip puzzles below this popularity score.")
+    parser.add_argument("--min-nb-plays", type=int, default=0, help="Skip puzzles with fewer than this many plays.")
     parser.add_argument("--min-rating", type=int, help="Skip puzzles below this rating.")
     parser.add_argument("--max-rating", type=int, help="Skip puzzles above this rating.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducible sampling.")
@@ -152,6 +156,9 @@ def sample_rows(args: argparse.Namespace) -> list[tuple]:
             popularity = parse_int(row["Popularity"])
             if popularity < args.min_popularity:
                 continue
+            nb_plays = parse_int(row["NbPlays"])
+            if nb_plays < args.min_nb_plays:
+                continue
             rating = parse_int(row["Rating"])
             if args.min_rating is not None and rating < args.min_rating:
                 continue
@@ -165,7 +172,7 @@ def sample_rows(args: argparse.Namespace) -> list[tuple]:
                 rating,
                 parse_int(row["RatingDeviation"]),
                 popularity,
-                parse_int(row["NbPlays"]),
+                nb_plays,
                 row["Themes"].split(),
                 row["GameUrl"],
                 [tag for tag in row["OpeningTags"].split() if tag],
