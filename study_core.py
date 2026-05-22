@@ -367,16 +367,17 @@ def _style(columns: int) -> str:
     grid-template-columns: repeat({columns}, 1fr);
     gap: 6mm;
   }}
+  /* Depth is shown with border weight, border style and a grey shade so it
+     survives black-and-white printing, not with hue alone. */
   .move-card {{
-    border: 1px solid #d1d5db;
-    border-left-width: 4px;
+    border: 1px solid #c4ccd4;
     break-inside: avoid;
     padding: 2mm;
   }}
-  .move-card.depth-0 {{ border-left-color: #1f2933; }}
-  .move-card.depth-1 {{ border-left-color: #2563eb; background: #f3f7ff; }}
-  .move-card.depth-2 {{ border-left-color: #7c3aed; background: #f7f3ff; }}
-  .move-card.depth-3 {{ border-left-color: #d97706; background: #fff7ed; }}
+  .move-card.depth-0 {{ border-left: 5px solid #1f2933; }}
+  .move-card.depth-1 {{ background: #f2f3f4; border-left: 4px solid #8b95a1; }}
+  .move-card.depth-2 {{ background: #eaebed; border-left: 4px dashed #6b7480; }}
+  .move-card.depth-3 {{ background: #e2e4e7; border-left: 4px dotted #6b7480; }}
   .mv-label {{ font-size: 12px; font-weight: 700; margin-bottom: 1.5mm; }}
   .move-card svg {{ display: block; height: auto; width: 100%; }}
   .mv-comment {{
