@@ -8,23 +8,36 @@
       name="description"
       content="BlunderMate Lab static MVP for printable chess puzzle sheets and chess tool experiments."
     >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
+    >
     <style>
       :root {
         color-scheme: light;
-        --bg: #f4f7f6;
-        --paper: #ffffff;
-        --ink: #172026;
-        --muted: #60717c;
-        --line: #d5dfdf;
-        --soft: #e9f1ef;
-        --teal: #176b66;
-        --teal-2: #0e514f;
-        --blue: #315f9f;
-        --gold: #b7791f;
-        --coral: #b84f43;
-        --green: #2f7d4f;
+        --bg-base: #f7f7f8;
+        --bg-surface: #ffffff;
+        --bg-elevated: #efeff1;
+        --tx: #1c1d1f;
+        --tx2: #62646a;
+        --tx3: #9a9ca3;
+        --ac: #2b5bd7;
+        --ac-lo: rgba(43, 91, 215, 0.10);
+        --ac-br: rgba(43, 91, 215, 0.25);
+        --brd: rgba(28, 29, 31, 0.08);
+        --brd2: rgba(28, 29, 31, 0.16);
+        --coral: #d03832;
         --light-square: #f0d9b5;
         --dark-square: #b58863;
+        --card-ring: 0 1px 2px rgba(28, 29, 31, 0.04), 0 0 0 1px rgba(28, 29, 31, 0.06);
+        --font-sans: 'Inter', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
       }
 
       * {
@@ -32,9 +45,9 @@
       }
 
       body {
-        background: var(--bg);
-        color: var(--ink);
-        font-family: Arial, "Malgun Gothic", sans-serif;
+        background: var(--bg-base);
+        color: var(--tx);
+        font-family: var(--font-sans);
         font-size: 15px;
         line-height: 1.5;
         margin: 0;
@@ -53,29 +66,42 @@
       }
 
       .header-lookup input {
-        background: #fff;
-        border: 1px solid #c4d1d1;
-        border-radius: 6px;
-        height: 36px;
-        padding: 6px 10px;
-        width: 200px;
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        border-radius: 8px;
+        color: var(--tx);
+        height: 38px;
+        padding: 6px 12px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        width: 220px;
+      }
+
+      .header-lookup input:focus {
+        border-color: var(--ac);
+        box-shadow: 0 0 0 3px var(--ac-lo);
+        outline: none;
+      }
+
+      .header-lookup input::placeholder {
+        color: var(--tx3);
       }
 
       .header-lookup button {
-        background: #fff;
-        border: 1px solid #b8c8c8;
-        border-radius: 6px;
-        color: var(--ink);
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        border-radius: 8px;
+        color: var(--tx);
         cursor: pointer;
-        font-weight: 700;
-        height: 36px;
-        min-height: 36px;
+        font-weight: 600;
+        height: 38px;
+        min-height: 38px;
         padding: 0 14px;
+        transition: background 0.15s ease;
         white-space: nowrap;
       }
 
       .header-lookup button:hover {
-        background: var(--soft);
+        background: var(--bg-elevated);
       }
 
       button {
@@ -83,23 +109,23 @@
       }
 
       a {
-        color: var(--blue);
-        font-weight: 700;
+        color: var(--ac);
+        font-weight: 600;
       }
 
       .shell {
         margin: 0 auto;
         max-width: 1320px;
-        padding: 16px 24px 24px;
+        padding: 16px 24px 32px;
       }
 
       .topbar {
         align-items: center;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 1px solid var(--brd);
         display: flex;
         gap: 18px;
         justify-content: space-between;
-        padding: 4px 0 12px;
+        padding: 4px 0 14px;
       }
 
       .brand {
@@ -109,9 +135,24 @@
       }
 
       .brand-mark {
-        color: var(--teal);
+        font-family: var(--font-mono);
         font-size: 13px;
         font-weight: 700;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+
+      .brand-mark .b {
+        color: var(--tx);
+      }
+
+      .brand-mark .m {
+        color: var(--ac);
+      }
+
+      .brand-mark .lab {
+        color: var(--tx3);
+        font-weight: 600;
       }
 
       h1,
@@ -123,6 +164,8 @@
 
       h1 {
         font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
         line-height: 1.1;
       }
 
@@ -134,9 +177,9 @@
       }
 
       .surface {
-        background: var(--paper);
-        border: 1px solid var(--line);
-        border-radius: 10px;
+        background: var(--bg-surface);
+        border-radius: 14px;
+        box-shadow: var(--card-ring);
         padding: 22px 24px;
       }
 
@@ -150,18 +193,9 @@
       }
 
       .section-title h2 {
-        font-size: 19px;
-      }
-
-      .pill {
-        background: var(--soft);
-        border: 1px solid #c9dbd7;
-        border-radius: 999px;
-        color: var(--teal-2);
-        font-size: 12px;
-        font-weight: 700;
-        padding: 3px 9px;
-        white-space: nowrap;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
       }
 
       .field-grid {
@@ -180,22 +214,33 @@
       }
 
       label {
-        color: var(--muted);
+        color: var(--tx2);
         font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
+        font-weight: 600;
       }
 
       input,
       select {
-        background: #fff;
-        border: 1px solid #c4d1d1;
-        border-radius: 6px;
-        color: var(--ink);
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        border-radius: 8px;
+        color: var(--tx);
         height: 40px;
         min-width: 0;
-        padding: 7px 9px;
+        padding: 7px 11px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
         width: 100%;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--ac);
+        box-shadow: 0 0 0 3px var(--ac-lo);
+        outline: none;
+      }
+
+      input::placeholder {
+        color: var(--tx3);
       }
 
       .control {
@@ -222,44 +267,41 @@
       }
 
       .segment {
-        background: #f3f7f6;
-        border: 1px solid #c4d1d1;
-        border-radius: 8px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--brd);
+        border-radius: 999px;
         display: grid;
-        gap: 0;
+        gap: 3px;
         grid-auto-columns: 1fr;
         grid-auto-flow: column;
-        overflow: hidden;
+        padding: 3px;
       }
 
       .segment button {
         background: transparent;
         border: 0;
-        border-right: 1px solid #d5dfdf;
-        color: var(--ink);
+        border-radius: 999px;
+        color: var(--tx2);
         cursor: pointer;
-        font-size: 14px;
-        font-weight: 700;
+        font-size: 13px;
+        font-weight: 500;
         line-height: 1.15;
-        min-height: 48px;
+        min-height: 40px;
         overflow: hidden;
-        padding: 10px 6px;
+        padding: 9px 6px;
         text-overflow: ellipsis;
         transition: background 0.12s ease, color 0.12s ease;
         white-space: nowrap;
       }
 
-      .segment button:last-child {
-        border-right: 0;
-      }
-
       .segment button:hover:not(.active) {
-        background: #e6efed;
+        color: var(--tx);
       }
 
       .segment button.active {
-        background: var(--teal);
-        color: #fff;
+        background: var(--tx);
+        color: var(--bg-surface);
+        font-weight: 600;
       }
 
       .sub-wrap {
@@ -271,24 +313,25 @@
       }
 
       .sub-wrap .segment {
-        background: #fafcfb;
+        background: var(--bg-base);
       }
 
       .sub-wrap .segment button {
-        font-size: 13px;
-        font-weight: 600;
-        min-height: 40px;
-        padding: 8px 6px;
+        font-size: 12px;
+        min-height: 36px;
+        padding: 7px 6px;
       }
 
       .toggle-row {
         align-items: center;
         display: flex;
+        font-size: 14px;
         gap: 9px;
         margin-top: 14px;
       }
 
       .toggle-row input {
+        accent-color: var(--ac);
         height: 18px;
         width: 18px;
       }
@@ -297,38 +340,58 @@
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
-        margin-top: 16px;
+        margin-top: 18px;
       }
 
       .primary,
       .secondary {
-        border-radius: 6px;
+        border-radius: 8px;
         cursor: pointer;
-        font-weight: 700;
-        padding: 8px 14px;
+        font-weight: 600;
+        padding: 9px 16px;
+        transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
       }
 
       .primary {
-        background: var(--teal);
-        border: 1px solid var(--teal);
+        background: var(--ac);
+        border: 1px solid var(--ac);
+        box-shadow: 0 4px 12px rgba(43, 91, 215, 0.18);
         color: #fff;
       }
 
       .primary:hover {
-        background: var(--teal-2);
+        box-shadow: 0 6px 16px rgba(43, 91, 215, 0.24);
+        transform: translateY(-1px);
+      }
+
+      .primary:active {
+        transform: translateY(1px);
+      }
+
+      .primary:disabled {
+        background: var(--tx3);
+        border-color: var(--tx3);
+        box-shadow: none;
+        cursor: not-allowed;
+        transform: none;
       }
 
       .secondary {
-        background: #fff;
-        border: 1px solid #b8c8c8;
-        color: var(--ink);
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        color: var(--tx);
+      }
+
+      .secondary:hover {
+        background: var(--bg-elevated);
       }
 
       .status {
-        border-left: 4px solid var(--teal);
-        color: var(--muted);
+        border-left: 3px solid var(--ac);
+        color: var(--tx2);
+        font-size: 14px;
         margin-top: 14px;
-        padding: 8px 11px;
+        padding: 8px 12px;
       }
 
       .status.error {
@@ -345,11 +408,14 @@
       }
 
       .preview-head h2 {
-        font-size: 22px;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
       }
 
       .preview-count {
-        color: var(--muted);
+        color: var(--tx3);
+        font-size: 13px;
         text-align: right;
       }
 
@@ -360,21 +426,24 @@
       }
 
       .puzzle-card {
-        border: 1px solid var(--line);
-        border-radius: 8px;
+        background: var(--bg-surface);
+        border-radius: 12px;
+        box-shadow: var(--card-ring);
         display: grid;
-        gap: 12px;
+        gap: 14px;
         grid-template-columns: 210px minmax(0, 1fr);
         min-width: 0;
-        padding: 12px;
+        padding: 14px;
       }
 
       .board {
         aspect-ratio: 1;
         border: 1px solid #6d553f;
+        border-radius: 3px;
         display: grid;
         grid-template-columns: repeat(8, 1fr);
         grid-template-rows: repeat(8, 1fr);
+        overflow: hidden;
         position: relative;
         width: 100%;
       }
@@ -405,7 +474,7 @@
       }
 
       .square.last {
-        box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65);
+        box-shadow: inset 0 0 0 3px rgba(43, 91, 215, 0.55);
       }
 
       .piece {
@@ -416,17 +485,18 @@
 
       .puzzle-copy {
         display: grid;
-        gap: 8px;
+        gap: 7px;
         min-width: 0;
       }
 
       .puzzle-title {
-        font-size: 16px;
-        font-weight: 700;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
       }
 
       .muted {
-        color: var(--muted);
+        color: var(--tx2);
         font-size: 13px;
       }
 
@@ -438,13 +508,13 @@
       }
 
       .tag {
-        background: #eef2f6;
-        border: 1px solid #d3dce6;
+        background: var(--bg-elevated);
+        border: 1px solid var(--brd);
         border-radius: 999px;
-        color: #34495f;
+        color: var(--tx2);
         display: inline-block;
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 500;
         line-height: 1;
         padding: 4px 9px;
         white-space: nowrap;
@@ -496,10 +566,6 @@
           grid-template-columns: 1fr;
         }
 
-        .pill {
-          white-space: normal;
-        }
-
         .puzzle-card .board {
           max-width: 260px;
         }
@@ -510,8 +576,10 @@
     <main class="shell">
       <header class="topbar">
         <div class="brand">
-          <div class="brand-mark">BlunderMate Lab</div>
-          <h1>Printable Puzzle Studio</h1>
+          <div class="brand-mark">
+            <span class="b">blunder</span><span class="m">mate</span> <span class="lab">Lab</span>
+          </div>
+          <h1>퍼즐 인쇄</h1>
         </div>
         <div class="header-lookup">
           <input id="puzzleLookup" type="text" placeholder="퍼즐 코드 (예: PDmQk)" maxlength="40" aria-label="퍼즐 코드">
@@ -522,8 +590,7 @@
       <div class="workspace">
         <section class="surface" aria-labelledby="controls-title">
           <div class="section-title">
-            <h2 id="controls-title">Sheet Builder</h2>
-            <span class="pill">Lichess DB</span>
+            <h2 id="controls-title">퍼즐 설정</h2>
           </div>
 
           <div class="control">
@@ -561,10 +628,10 @@
         <section class="surface" aria-labelledby="preview-title">
           <div class="preview-head">
             <div>
-              <h2 id="preview-title">Preview</h2>
+              <h2 id="preview-title">미리보기</h2>
               <p class="muted">Lichess 퍼즐 데이터베이스</p>
             </div>
-            <div id="previewCount" class="preview-count">0 puzzles</div>
+            <div id="previewCount" class="preview-count">0개</div>
           </div>
           <div id="puzzleGrid" class="puzzle-grid"></div>
         </section>
@@ -870,7 +937,7 @@
 
       function renderPreview() {
         const puzzles = currentPuzzles();
-        $("previewCount").textContent = `${puzzles.length} puzzle${puzzles.length === 1 ? "" : "s"}`;
+        $("previewCount").textContent = `퍼즐 ${puzzles.length}개`;
         $("puzzleGrid").innerHTML = puzzles.map((puzzle, index) => `
           <article class="puzzle-card">
             ${boardMarkup(puzzle)}

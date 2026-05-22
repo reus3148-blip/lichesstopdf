@@ -8,18 +8,32 @@
       name="description"
       content="Lichess 스터디를 수마다 다이어그램이 붙은 인쇄용 오프닝 연구 시트로 만듭니다."
     >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
+    >
     <style>
       :root {
         color-scheme: light;
-        --bg: #f4f7f6;
-        --paper: #ffffff;
-        --ink: #172026;
-        --muted: #60717c;
-        --line: #d5dfdf;
-        --soft: #e9f1ef;
-        --teal: #176b66;
-        --teal-2: #0e514f;
-        --blue: #315f9f;
+        --bg-base: #f7f7f8;
+        --bg-surface: #ffffff;
+        --bg-elevated: #efeff1;
+        --tx: #1c1d1f;
+        --tx2: #62646a;
+        --tx3: #9a9ca3;
+        --ac: #2b5bd7;
+        --ac-lo: rgba(43, 91, 215, 0.10);
+        --brd: rgba(28, 29, 31, 0.08);
+        --brd2: rgba(28, 29, 31, 0.16);
+        --card-ring: 0 1px 2px rgba(28, 29, 31, 0.04), 0 0 0 1px rgba(28, 29, 31, 0.06);
+        --font-sans: 'Inter', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
       }
 
       * {
@@ -27,9 +41,9 @@
       }
 
       body {
-        background: var(--bg);
-        color: var(--ink);
-        font-family: Arial, "Malgun Gothic", sans-serif;
+        background: var(--bg-base);
+        color: var(--tx);
+        font-family: var(--font-sans);
         font-size: 15px;
         line-height: 1.5;
         margin: 0;
@@ -44,38 +58,75 @@
       .shell {
         margin: 0 auto;
         max-width: 640px;
-        padding: 40px 24px 64px;
+        padding: 0 24px 64px;
       }
 
-      .back {
-        color: var(--blue);
-        font-size: 13px;
-        text-decoration: none;
+      .topbar {
+        align-items: center;
+        border-bottom: 1px solid var(--brd);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        justify-content: space-between;
+        padding: 16px 0 14px;
+      }
+
+      .brand {
+        align-items: baseline;
+        display: flex;
+        gap: 12px;
       }
 
       .brand-mark {
-        color: var(--teal);
+        font-family: var(--font-mono);
         font-size: 13px;
         font-weight: 700;
-        letter-spacing: 0.12em;
-        margin-top: 18px;
-        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+
+      .brand-mark .b {
+        color: var(--tx);
+      }
+
+      .brand-mark .m {
+        color: var(--ac);
+      }
+
+      .brand-mark .lab {
+        color: var(--tx3);
+        font-weight: 600;
       }
 
       h1 {
-        font-size: 26px;
-        margin: 6px 0 8px;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+        margin: 0;
+      }
+
+      .back {
+        color: var(--ac);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .back:hover {
+        text-decoration: underline;
       }
 
       .lead {
-        color: var(--muted);
-        margin: 0 0 28px;
+        color: var(--tx2);
+        margin: 20px 0 18px;
       }
 
       .surface {
-        background: var(--paper);
-        border: 1px solid var(--line);
+        background: var(--bg-surface);
         border-radius: 14px;
+        box-shadow: var(--card-ring);
         padding: 26px 24px;
       }
 
@@ -88,14 +139,15 @@
       }
 
       label {
+        color: var(--tx);
         display: block;
         font-size: 13px;
-        font-weight: 700;
+        font-weight: 600;
         margin-bottom: 6px;
       }
 
       .hint {
-        color: var(--muted);
+        color: var(--tx2);
         font-size: 12px;
         font-weight: 400;
         margin-top: 4px;
@@ -104,11 +156,25 @@
       input[type="text"],
       input[type="number"],
       select {
-        background: #fff;
-        border: 1px solid var(--line);
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
         border-radius: 8px;
+        color: var(--tx);
         padding: 10px 12px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
         width: 100%;
+      }
+
+      input[type="text"]:focus,
+      input[type="number"]:focus,
+      select:focus {
+        border-color: var(--ac);
+        box-shadow: 0 0 0 3px var(--ac-lo);
+        outline: none;
+      }
+
+      input::placeholder {
+        color: var(--tx3);
       }
 
       .grid {
@@ -126,33 +192,42 @@
       }
 
       .toggle input {
+        accent-color: var(--ac);
         height: 16px;
         width: 16px;
       }
 
       .actions {
-        border-top: 1px solid var(--line);
+        border-top: 1px solid var(--brd);
         margin-top: 22px;
         padding-top: 20px;
       }
 
       .primary {
-        background: var(--teal);
+        background: var(--ac);
         border: 0;
-        border-radius: 9px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(43, 91, 215, 0.18);
         color: #fff;
         cursor: pointer;
-        font-weight: 700;
+        font-size: 15px;
+        font-weight: 600;
         padding: 12px 18px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
         width: 100%;
       }
 
       .primary:hover {
-        background: var(--teal-2);
+        box-shadow: 0 6px 16px rgba(43, 91, 215, 0.24);
+        transform: translateY(-1px);
+      }
+
+      .primary:active {
+        transform: translateY(1px);
       }
 
       .note {
-        color: var(--muted);
+        color: var(--tx3);
         font-size: 12px;
         margin-top: 12px;
       }
@@ -160,9 +235,16 @@
   </head>
   <body>
     <main class="shell">
-      <a class="back" href="/">← BlunderMate Lab</a>
-      <div class="brand-mark">Opening</div>
-      <h1>오프닝 스터디 인쇄</h1>
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">
+            <span class="b">blunder</span><span class="m">mate</span> <span class="lab">Lab</span>
+          </div>
+          <h1>오프닝 스터디 인쇄</h1>
+        </div>
+        <a class="back" href="/">← 도구 목록</a>
+      </header>
+
       <p class="lead">
         Lichess 스터디를 수마다 보드 다이어그램이 붙은 오프닝 연구 시트로 만듭니다.
       </p>

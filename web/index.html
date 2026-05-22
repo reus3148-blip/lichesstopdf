@@ -8,18 +8,30 @@
       name="description"
       content="BlunderMate Lab - 체스 퍼즐과 오프닝 스터디를 인쇄용으로 만드는 도구 모음."
     >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
+    >
     <style>
       :root {
         color-scheme: light;
-        --bg: #f4f7f6;
-        --paper: #ffffff;
-        --ink: #172026;
-        --muted: #60717c;
-        --line: #d5dfdf;
-        --soft: #e9f1ef;
-        --teal: #176b66;
-        --teal-2: #0e514f;
-        --blue: #315f9f;
+        --bg-base: #f7f7f8;
+        --bg-surface: #ffffff;
+        --tx: #1c1d1f;
+        --tx2: #62646a;
+        --tx3: #9a9ca3;
+        --ac: #2b5bd7;
+        --brd: rgba(28, 29, 31, 0.08);
+        --list-divider: rgba(28, 29, 31, 0.06);
+        --press-fill: rgba(28, 29, 31, 0.05);
+        --font-sans: 'Inter', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
       }
 
       * {
@@ -27,9 +39,9 @@
       }
 
       body {
-        background: var(--bg);
-        color: var(--ink);
-        font-family: Arial, "Malgun Gothic", sans-serif;
+        background: var(--bg-base);
+        color: var(--tx);
+        font-family: var(--font-sans);
         font-size: 15px;
         line-height: 1.5;
         margin: 0;
@@ -37,119 +49,134 @@
 
       .shell {
         margin: 0 auto;
-        max-width: 880px;
-        padding: 48px 24px 64px;
+        max-width: 600px;
+        padding: 0 24px 56px;
+      }
+
+      .topbar {
+        align-items: center;
+        border-bottom: 1px solid var(--brd);
+        display: flex;
+        padding: 16px 0 14px;
       }
 
       .brand-mark {
-        color: var(--teal);
-        font-size: 13px;
+        font-family: var(--font-mono);
+        font-size: 14px;
         font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        letter-spacing: -0.02em;
       }
 
-      h1 {
-        font-size: 30px;
-        margin: 6px 0 8px;
+      .brand-mark .b {
+        color: var(--tx);
       }
 
-      .lead {
-        color: var(--muted);
-        margin: 0 0 36px;
-        max-width: 560px;
+      .brand-mark .m {
+        color: var(--ac);
       }
 
-      .tools {
-        display: grid;
-        gap: 20px;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      .brand-mark .lab {
+        color: var(--tx3);
+        font-weight: 600;
       }
 
-      .tool {
-        background: var(--paper);
-        border: 1px solid var(--line);
+      .intro {
+        color: var(--tx2);
+        margin: 22px 0 14px;
+      }
+
+      .tool-list {
+        background: var(--bg-surface);
+        border: 1px solid var(--brd);
         border-radius: 14px;
+        overflow: hidden;
+      }
+
+      .tool-row {
+        align-items: center;
         color: inherit;
         display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 26px 24px;
+        gap: 14px;
+        padding: 15px 16px;
         text-decoration: none;
-        transition: border-color 0.15s, transform 0.15s;
+        transition: background 0.12s ease;
       }
 
-      .tool:hover {
-        border-color: var(--teal);
-        transform: translateY(-2px);
+      .tool-row + .tool-row {
+        border-top: 1px solid var(--list-divider);
       }
 
-      .tool-tag {
-        align-self: flex-start;
-        background: var(--soft);
-        border-radius: 999px;
-        color: var(--teal-2);
-        font-size: 12px;
-        font-weight: 700;
-        padding: 3px 10px;
+      .tool-row:hover {
+        background: var(--press-fill);
       }
 
-      .tool h2 {
-        font-size: 19px;
-        margin: 6px 0 0;
+      .tool-row-text {
+        display: grid;
+        flex: 1;
+        gap: 3px;
+        min-width: 0;
       }
 
-      .tool p {
-        color: var(--muted);
-        font-size: 14px;
-        margin: 0;
+      .tool-row-title {
+        font-size: 15px;
+        font-weight: 600;
       }
 
-      .tool-go {
-        color: var(--teal);
-        font-weight: 700;
-        margin-top: 10px;
+      .tool-row-desc {
+        color: var(--tx2);
+        font-size: 13px;
+      }
+
+      .chev {
+        color: var(--tx3);
+        flex: none;
+        font-size: 22px;
+        line-height: 1;
       }
 
       footer {
-        color: var(--muted);
+        color: var(--tx3);
         font-size: 13px;
-        margin-top: 44px;
+        margin-top: 24px;
       }
 
       footer a {
-        color: var(--blue);
+        color: var(--ac);
+        font-weight: 500;
       }
     </style>
   </head>
   <body>
-    <main class="shell">
-      <div class="brand-mark">BlunderMate Lab</div>
-      <h1>인쇄용 체스 도구</h1>
-      <p class="lead">
-        Lichess 데이터로 종이에 출력하기 좋은 자료를 만듭니다. 원하는 도구를 고르세요.
-      </p>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand-mark">
+          <span class="b">blunder</span><span class="m">mate</span> <span class="lab">Lab</span>
+        </div>
+      </header>
 
-      <div class="tools">
-        <a class="tool" href="/puzzle">
-          <span class="tool-tag">Puzzle</span>
-          <h2>퍼즐 인쇄</h2>
-          <p>난이도와 테마로 고른 전술 퍼즐을 문제지·해답지로 출력합니다.</p>
-          <span class="tool-go">퍼즐 만들기 →</span>
-        </a>
+      <p class="intro">Lichess 데이터로 종이에 출력하기 좋은 체스 자료를 만듭니다.</p>
 
-        <a class="tool" href="/opening">
-          <span class="tool-tag">Opening</span>
-          <h2>오프닝 스터디 인쇄</h2>
-          <p>Lichess 스터디를 수마다 다이어그램이 붙은 오프닝 연구 시트로 출력합니다.</p>
-          <span class="tool-go">스터디 만들기 →</span>
+      <nav class="tool-list">
+        <a class="tool-row" href="/puzzle">
+          <div class="tool-row-text">
+            <div class="tool-row-title">퍼즐 인쇄</div>
+            <div class="tool-row-desc">난이도와 테마로 고른 전술 퍼즐을 문제지·해답지로 출력합니다.</div>
+          </div>
+          <span class="chev" aria-hidden="true">›</span>
         </a>
-      </div>
+        <a class="tool-row" href="/opening">
+          <div class="tool-row-text">
+            <div class="tool-row-title">오프닝 스터디 인쇄</div>
+            <div class="tool-row-desc">Lichess 스터디를 수마다 다이어그램이 붙은 연구 시트로 출력합니다.</div>
+          </div>
+          <span class="chev" aria-hidden="true">›</span>
+        </a>
+      </nav>
 
       <footer>
         퍼즐 데이터는 <a href="https://database.lichess.org/#puzzles">Lichess open database</a>의
         CC0 퍼즐을 사용합니다.
       </footer>
-    </main>
+    </div>
   </body>
 </html>
