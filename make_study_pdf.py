@@ -9,6 +9,7 @@ from study_core import (
     StudyOptions,
     fetch_study,
     prepare_study,
+    render_game_html,
     render_study_html,
 )
 
@@ -45,6 +46,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--mainline-only", action="store_true", help="Skip every variation, keep only main lines.")
     parser.add_argument(
+        "--layout",
+        choices=["study", "game"],
+        default="study",
+        help="study: per-move grid with comments. game: compact sheet of 8 diagrams per page.",
+    )
+    parser.add_argument(
         "--page-break-per-chapter",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -63,6 +70,7 @@ def main() -> int:
         mainline_only=args.mainline_only,
         max_variation_depth=args.max_variation_depth,
         page_break_per_chapter=args.page_break_per_chapter,
+        layout=args.layout,
     )
 
     try:
@@ -77,7 +85,10 @@ def main() -> int:
     except StudyError as exc:
         raise SystemExit(str(exc))
 
-    html_doc = render_study_html(result, options)
+    if options.layout == "game":
+        html_doc = render_game_html(result, options)
+    else:
+        html_doc = render_study_html(result, options)
     html_path = args.html or args.output.with_suffix(".html")
     html_path.parent.mkdir(parents=True, exist_ok=True)
     html_path.write_text(html_doc, encoding="utf-8")

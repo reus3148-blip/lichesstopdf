@@ -45,6 +45,7 @@ class StudyOptions:
     mainline_only: bool = False
     max_variation_depth: int = 4
     page_break_per_chapter: bool = True
+    layout: str = "study"
 
     @property
     def flipped(self) -> bool:
@@ -231,13 +232,69 @@ def chapter_from_game(
     return study_name.strip(), chapter
 
 
+def game_chapter_from_game(
+    game: chess.pgn.Game, index: int, flipped: bool, max_depth: int
+) -> Chapter:
+    """Build a Chapter for the game layout: heading taken from the player tags."""
+
+    def tag(name: str) -> str:
+        value = game.headers.get(name, "").strip()
+        return "" if value in ("", "?") else value
+
+    white, black = tag("White"), tag("Black")
+    event, result = tag("Event"), tag("Result")
+    if result == "*":
+        result = ""
+
+    # PGN dates use "?" for unknown parts (e.g. "1858.??.??"). Keep the known
+    # leading components so the heading shows "1858" rather than "1858.??.??".
+    date_parts: list[str] = []
+    for part in tag("Date").split("."):
+        if "?" in part:
+            break
+        date_parts.append(part)
+    date = ".".join(date_parts)
+
+    if white and black:
+        title = f"{white} – {black}"
+        meta_bits = [event, date, result]
+    else:
+        title = white or black or event or f"Game {index}"
+        meta_bits = [date, result]
+
+    site = game.headers.get("Site", "").strip()
+    if not site.startswith("http"):
+        site = ""
+
+    return Chapter(
+        title=title,
+        meta=" · ".join(bit for bit in meta_bits if bit),
+        site=site,
+        cards=build_cards(game, flipped, max_depth),
+    )
+
+
 def prepare_study(pgn_text: str, source_note: str, options: StudyOptions) -> StudyResult:
     games = read_games(pgn_text)
     if not games:
         raise StudyError("No chapters were found in the PGN.")
 
+    if options.layout == "game":
+        chapters = [
+            game_chapter_from_game(game, index, options.flipped, options.depth_limit)
+            for index, game in enumerate(games, start=1)
+        ]
+        if options.title and len(chapters) == 1:
+            chapters[0].title = options.title
+        default_title = chapters[0].title if len(chapters) == 1 else "Chess Games"
+        return StudyResult(
+            title=options.title or default_title,
+            source_note=source_note,
+            chapters=chapters,
+        )
+
     study_name = ""
-    chapters: list[Chapter] = []
+    chapters = []
     for index, game in enumerate(games, start=1):
         name, chapter = chapter_from_game(game, index, options.flipped, options.depth_limit)
         study_name = study_name or name
@@ -402,6 +459,115 @@ def _style(columns: int) -> str:
 </style>"""
 
 
+def render_game_html(result: StudyResult, options: StudyOptions) -> str:
+    """Render a game PGN as a compact diagram sheet: 8 boards per A4 page."""
+    body: list[str] = []
+    body.append("<!doctype html>")
+    body.append("<html lang=\"en\">")
+    body.append("<head>")
+    body.append("<meta charset=\"utf-8\">")
+    body.append(f"<title>{text(result.title)}</title>")
+    body.append(_game_style())
+    body.append("</head>")
+    body.append("<body>")
+
+    body.append("<div class=\"print-bar\">")
+    body.append("<button type=\"button\" onclick=\"window.print()\">인쇄 / PDF로 저장</button>")
+    body.append("</div>")
+
+    for index, chapter in enumerate(result.chapters):
+        classes = ["game-section"]
+        if index > 0:
+            classes.append("page-start")
+        body.append(f"<section class=\"{' '.join(classes)}\">")
+
+        body.append("<div class=\"game-head\">")
+        body.append(f"<div class=\"game-title\">{text(chapter.title)}</div>")
+        meta_line = chapter.meta
+        if chapter.site:
+            link = f"<a href=\"{text(chapter.site)}\">{text(chapter.site)}</a>"
+            meta_line = f"{meta_line} · {link}" if meta_line else link
+        if meta_line:
+            body.append(f"<div class=\"game-meta\">{meta_line}</div>")
+        body.append("</div>")
+
+        body.append("<div class=\"diagram-grid\">")
+        for card in chapter.cards:
+            body.append(f"<article class=\"diagram depth-{min(card.depth, 3)}\">")
+            body.append(f"<div class=\"dg-label\">{text(card.label)}</div>")
+            body.append(card.svg)
+            body.append("</article>")
+        body.append("</div>")
+        body.append("</section>")
+
+    body.append("</body>")
+    body.append("</html>")
+    return "\n".join(body)
+
+
+def _game_style() -> str:
+    # The A4 content box is 273mm tall. ~18mm is reserved for the game heading
+    # (plus a 2mm print-rounding cushion) so the heading shares its page with
+    # four rows of diagrams. Cards have a fixed height so every page tiles into
+    # a 2 x 4 grid -> 8 diagrams per page, heading page included.
+    card_height = round((273 - 2 - 18 - 3 * 5) / 4, 2)
+    return f"""<style>
+  @page {{ size: A4; margin: 12mm; }}
+  * {{ box-sizing: border-box; }}
+  body {{
+    color: #1f2933;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    margin: 0;
+  }}
+  a {{ color: #1f4f8f; text-decoration: none; }}
+  .print-bar {{ position: fixed; right: 12px; top: 12px; z-index: 50; }}
+  .print-bar button {{
+    background: #176b66;
+    border: 0;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    padding: 8px 14px;
+  }}
+  .game-section {{ margin-top: 9mm; }}
+  .game-section:first-of-type {{ margin-top: 0; }}
+  .game-section.page-start {{ break-before: page; margin-top: 0; }}
+  .game-head {{
+    border-bottom: 2px solid #1f2933;
+    break-after: avoid;
+    margin-bottom: 4mm;
+    padding-bottom: 2mm;
+  }}
+  .game-title {{ font-size: 17px; font-weight: 800; }}
+  .game-meta {{ color: #52606d; font-size: 10px; margin-top: 1mm; }}
+  .diagram-grid {{
+    display: grid;
+    grid-template-columns: repeat(2, 53mm);
+    gap: 5mm 16mm;
+    justify-content: center;
+  }}
+  /* Variation depth is shown with a grey shade so it survives mono printing. */
+  .diagram {{
+    border: 1px solid #c4ccd4;
+    break-inside: avoid;
+    height: {card_height}mm;
+    min-height: 0;
+    overflow: hidden;
+    padding: 2mm;
+    text-align: center;
+  }}
+  .diagram.depth-1 {{ background: #f2f3f4; }}
+  .diagram.depth-2 {{ background: #eaebed; }}
+  .diagram.depth-3 {{ background: #e2e4e7; }}
+  .dg-label {{ font-size: 12px; font-weight: 700; margin-bottom: 1mm; }}
+  .diagram svg {{ display: block; height: auto; margin: 0 auto; width: 100%; }}
+  @media print {{ .print-bar {{ display: none; }} }}
+</style>"""
+
+
 def study_options_from_request(source: dict) -> StudyOptions:
     def as_int(value: object, default: int) -> int:
         try:
@@ -416,6 +582,7 @@ def study_options_from_request(source: dict) -> StudyOptions:
     orientation = "black" if str(source.get("orientation") or "white").lower() == "black" else "white"
     raw_page_break = source.get("pageBreakPerChapter")
     page_break = True if raw_page_break is None else as_bool(raw_page_break)
+    layout = "game" if str(source.get("layout") or "study").lower() == "game" else "study"
     return StudyOptions(
         title=raw_title or None,
         columns=max(1, min(5, as_int(source.get("columns"), 2))),
@@ -423,6 +590,7 @@ def study_options_from_request(source: dict) -> StudyOptions:
         mainline_only=as_bool(source.get("mainlineOnly")),
         max_variation_depth=max(0, as_int(source.get("maxVariationDepth"), 4)),
         page_break_per_chapter=page_break,
+        layout=layout,
     )
 
 
@@ -449,6 +617,8 @@ def render_study_from_request(source: dict) -> str:
             f"This study renders {result.diagram_count} diagrams, over the "
             f"{MAX_REQUEST_DIAGRAMS} limit. Turn on main-line-only or pick a single chapter."
         )
+    if options.layout == "game":
+        return render_game_html(result, options)
     return render_study_html(result, options)
 
 
@@ -460,6 +630,6 @@ def error_page(message: str) -> str:
         "max-width:520px;margin:80px auto;padding:0 24px;line-height:1.5\">"
         "<h1 style=\"font-size:19px\">스터디를 만들 수 없습니다</h1>"
         f"<p>{text(message)}</p>"
-        "<p><a href=\"/opening\" style=\"color:#176b66;font-weight:700\">← 다시 시도</a></p>"
+        "<p><a href=\"/\" style=\"color:#176b66;font-weight:700\">← 도구 목록</a></p>"
         "</body></html>"
     )

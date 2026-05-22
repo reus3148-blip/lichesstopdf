@@ -52,10 +52,13 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         try:
             length = int(self.headers.get("Content-Length", "0"))
-            raw = self.rfile.read(length).decode("utf-8") if length else "{}"
-            source = json.loads(raw or "{}")
-            if not isinstance(source, dict):
-                raise ValueError("Request body must be a JSON object.")
+            raw = self.rfile.read(length).decode("utf-8") if length else ""
+            if "form-urlencoded" in self.headers.get("Content-Type", ""):
+                source = {key: values[0] for key, values in parse_qs(raw).items() if values}
+            else:
+                source = json.loads(raw or "{}")
+                if not isinstance(source, dict):
+                    raise ValueError("Request body must be a JSON object.")
         except Exception as exc:  # noqa: BLE001
             self._send_html(400, error_page(f"Invalid request body: {exc}"))
             return

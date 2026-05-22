@@ -17,6 +17,8 @@
 - [x] Lichess 스터디 PDF 출력 (수마다 다이어그램)
 - [x] Lab 페이지 분리 (랜딩 허브 / `/puzzle` / `/opening`)
 - [x] `api/study.py` 스터디 렌더 엔드포인트 (study_core 공유)
+- [x] 게임 PGN 기보 인쇄 레이아웃 (`--layout game`, 한 페이지 8개 다이어그램)
+- [x] 기보 인쇄 Lab 페이지 (`/game`, PGN 붙여넣기)
 
 ## Next
 

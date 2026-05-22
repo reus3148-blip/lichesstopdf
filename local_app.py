@@ -324,6 +324,10 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
             self.serve_file(WEB_DIR / "opening.html", "text/html; charset=utf-8")
             return
 
+        if path in {"/game", "/game.html"}:
+            self.serve_file(WEB_DIR / "game.html", "text/html; charset=utf-8")
+            return
+
         if path == "/tokens.css":
             self.serve_file(WEB_DIR / "tokens.css", "text/css; charset=utf-8")
             return
@@ -367,11 +371,17 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
 
         try:
             length = int(self.headers.get("Content-Length", "0"))
-            payload = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
+            raw = self.rfile.read(length).decode("utf-8") if length else ""
 
             if parsed.path == "/api/study":
+                if "form-urlencoded" in self.headers.get("Content-Type", ""):
+                    payload = {key: values[0] for key, values in parse_qs(raw).items() if values}
+                else:
+                    payload = json.loads(raw or "{}")
                 self.send_study(payload)
                 return
+
+            payload = json.loads(raw or "{}")
 
             if parsed.path == "/api/preview":
                 result = preview_puzzles(payload)
