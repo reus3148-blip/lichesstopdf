@@ -39,6 +39,12 @@ def parse_args() -> argparse.Namespace:
         help="How deeply nested variations may go. 0 keeps only the main line.",
     )
     parser.add_argument("--mainline-only", action="store_true", help="Skip every variation, keep only main lines.")
+    parser.add_argument(
+        "--page-break-per-chapter",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Start each chapter on a new page. Use --no-page-break-per-chapter for continuous flow.",
+    )
     parser.add_argument("--chrome-path", type=Path, help="Path to Chrome or Edge executable.")
     return parser.parse_args()
 
@@ -51,6 +57,7 @@ def main() -> int:
         orientation=args.orientation,
         mainline_only=args.mainline_only,
         max_variation_depth=args.max_variation_depth,
+        page_break_per_chapter=args.page_break_per_chapter,
     )
 
     try:

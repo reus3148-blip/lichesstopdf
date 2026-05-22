@@ -44,6 +44,7 @@ class StudyOptions:
     orientation: str = "white"
     mainline_only: bool = False
     max_variation_depth: int = 4
+    page_break_per_chapter: bool = True
 
     @property
     def flipped(self) -> bool:
@@ -273,12 +274,15 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
     body.append(f"<div class=\"study-sub\">{text(sub)}</div>")
     body.append("</header>")
 
-    for chapter in result.chapters:
+    for index, chapter in enumerate(result.chapters):
+        classes = ["study-section"]
         # Short chapters are kept whole so a heading is never stranded at a
         # page bottom; long ones flow so they are not clipped.
-        compact = len(chapter.cards) <= 2 * options.columns
-        section_class = "study-section is-short" if compact else "study-section"
-        body.append(f"<section class=\"{section_class}\">")
+        if len(chapter.cards) <= 2 * options.columns:
+            classes.append("is-short")
+        if options.page_break_per_chapter and index > 0:
+            classes.append("page-start")
+        body.append(f"<section class=\"{' '.join(classes)}\">")
         body.append("<div class=\"chapter-head\">")
         body.append(f"<div class=\"chapter-title\">{text(chapter.title)}</div>")
         meta_line = chapter.meta
@@ -342,6 +346,7 @@ def _style(columns: int) -> str:
   .study-section {{ margin-top: 9mm; }}
   .study-section:first-of-type {{ margin-top: 0; }}
   .study-section.is-short {{ break-inside: avoid; }}
+  .study-section.page-start {{ break-before: page; margin-top: 0; }}
   .chapter-head {{
     border-bottom: 1px solid #c9d2dc;
     break-after: avoid;
@@ -396,12 +401,15 @@ def study_options_from_request(source: dict) -> StudyOptions:
 
     raw_title = str(source.get("title") or "").strip()
     orientation = "black" if str(source.get("orientation") or "white").lower() == "black" else "white"
+    raw_page_break = source.get("pageBreakPerChapter")
+    page_break = True if raw_page_break is None else as_bool(raw_page_break)
     return StudyOptions(
         title=raw_title or None,
         columns=max(1, min(5, as_int(source.get("columns"), 3))),
         orientation=orientation,
         mainline_only=as_bool(source.get("mainlineOnly")),
         max_variation_depth=max(0, as_int(source.get("maxVariationDepth"), 4)),
+        page_break_per_chapter=page_break,
     )
 
 
