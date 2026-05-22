@@ -68,6 +68,7 @@ class Chapter:
     title: str
     meta: str
     site: str
+    intro: str = ""
     cards: list[MoveCard] = field(default_factory=list)
 
 
@@ -167,7 +168,7 @@ def build_cards(game: chess.pgn.Game, flipped: bool, max_depth: int) -> list[Mov
         MoveCard(
             label="Start",
             svg=render_board(start_board, None, game.arrows(), flipped),
-            comment=clean_comment(game.comment),
+            comment="",
             depth=0,
             is_start=True,
         )
@@ -233,6 +234,7 @@ def chapter_from_game(
         title=chapter_name,
         meta=" - ".join(meta_bits),
         site=site,
+        intro=clean_comment(game.comment),
         cards=build_cards(game, flipped, max_depth),
     )
     return study_name.strip(), chapter
@@ -282,7 +284,11 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
     body.append("</header>")
 
     for chapter in result.chapters:
-        body.append("<section class=\"study-section\">")
+        # Short chapters are kept whole so a heading is never stranded at a
+        # page bottom; long ones flow so they are not clipped.
+        compact = len(chapter.cards) <= 2 * options.columns
+        section_class = "study-section is-short" if compact else "study-section"
+        body.append(f"<section class=\"{section_class}\">")
         body.append("<div class=\"chapter-head\">")
         body.append(f"<div class=\"chapter-title\">{text(chapter.title)}</div>")
         meta_line = chapter.meta
@@ -292,6 +298,9 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
         if meta_line:
             body.append(f"<div class=\"chapter-meta\">{meta_line}</div>")
         body.append("</div>")
+
+        if chapter.intro:
+            body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
         body.append("<div class=\"move-grid\">")
         for card in chapter.cards:
@@ -344,15 +353,24 @@ def _style(columns: int) -> str:
   }}
   .study-title {{ font-size: 22px; font-weight: 800; }}
   .study-sub {{ color: #52606d; font-size: 11px; margin-top: 1mm; }}
-  .study-section {{ break-before: page; }}
-  .study-section:first-of-type {{ break-before: auto; }}
+  .study-section {{ margin-top: 9mm; }}
+  .study-section:first-of-type {{ margin-top: 0; }}
+  .study-section.is-short {{ break-inside: avoid; }}
   .chapter-head {{
     border-bottom: 1px solid #c9d2dc;
+    break-after: avoid;
     margin-bottom: 4mm;
     padding-bottom: 2mm;
   }}
   .chapter-title {{ font-size: 16px; font-weight: 700; }}
   .chapter-meta {{ color: #52606d; font-size: 10px; margin-top: 1mm; }}
+  .chapter-intro {{
+    color: #3a4754;
+    font-size: 11px;
+    line-height: 1.5;
+    margin: 0 0 5mm;
+    max-width: 165mm;
+  }}
   .move-grid {{
     display: grid;
     grid-template-columns: repeat({columns}, 1fr);
