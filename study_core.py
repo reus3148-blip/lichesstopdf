@@ -60,7 +60,6 @@ class MoveCard:
     svg: str
     comment: str
     depth: int
-    is_start: bool = False
 
 
 @dataclass
@@ -164,15 +163,6 @@ def render_board(
 def build_cards(game: chess.pgn.Game, flipped: bool, max_depth: int) -> list[MoveCard]:
     cards: list[MoveCard] = []
     start_board = game.board()
-    cards.append(
-        MoveCard(
-            label="Start",
-            svg=render_board(start_board, None, game.arrows(), flipped),
-            comment="",
-            depth=0,
-            is_start=True,
-        )
-    )
 
     def make_card(before: chess.Board, node: chess.pgn.ChildNode, depth: int) -> MoveCard:
         san = before.san(node.move)
@@ -304,11 +294,7 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
 
         body.append("<div class=\"move-grid\">")
         for card in chapter.cards:
-            classes = (
-                "move-card is-start"
-                if card.is_start
-                else f"move-card depth-{min(card.depth, 3)}"
-            )
+            classes = f"move-card depth-{min(card.depth, 3)}"
             body.append(f"<article class=\"{classes}\">")
             body.append(f"<div class=\"mv-label\">{text(card.label)}</div>")
             body.append(card.svg)
@@ -386,7 +372,6 @@ def _style(columns: int) -> str:
   .move-card.depth-1 {{ border-left-color: #2563eb; background: #f3f7ff; }}
   .move-card.depth-2 {{ border-left-color: #7c3aed; background: #f7f3ff; }}
   .move-card.depth-3 {{ border-left-color: #d97706; background: #fff7ed; }}
-  .move-card.is-start {{ border-left-color: #059669; background: #f0fdf4; }}
   .mv-label {{ font-size: 12px; font-weight: 700; margin-bottom: 1.5mm; }}
   .move-card svg {{ display: block; height: auto; width: 100%; }}
   .mv-comment {{
