@@ -25,7 +25,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--html", type=Path, help="HTML output path. Defaults to the PDF path with .html.")
     parser.add_argument("--html-only", action="store_true", help="Only create HTML, skip PDF generation.")
     parser.add_argument("--title", help="Document title. Defaults to the study name from the PGN.")
-    parser.add_argument("--columns", type=int, default=3, help="Diagram columns per row (1-5).")
+    parser.add_argument(
+        "--columns",
+        type=int,
+        default=2,
+        help="Grid size N (1-5): every page is split into an N x N set of cells.",
+    )
     parser.add_argument(
         "--orientation",
         choices=["white", "black"],

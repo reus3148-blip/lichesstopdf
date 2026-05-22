@@ -40,7 +40,7 @@ class StudyError(Exception):
 @dataclass
 class StudyOptions:
     title: str | None = None
-    columns: int = 3
+    columns: int = 2
     orientation: str = "white"
     mainline_only: bool = False
     max_variation_depth: int = 4
@@ -315,6 +315,11 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
 
 def _style(columns: int) -> str:
     columns = max(1, min(columns, 5))
+    # The A4 content box is 273mm tall (297 - 2x12mm margins). Cards have a
+    # fixed height so every page tiles into the same columns x columns grid.
+    # ~32mm is reserved so a chapter heading can share a page with a full set
+    # of rows instead of pushing the rows onto the next page.
+    card_height = round((273 - 32 - (columns - 1) * 6) / columns, 2)
     return f"""<style>
   @page {{ size: A4; margin: 12mm; }}
   * {{ box-sizing: border-box; }}
@@ -372,6 +377,11 @@ def _style(columns: int) -> str:
   .move-card {{
     border: 1px solid #c4ccd4;
     break-inside: avoid;
+    height: {card_height}mm;
+    /* min-height:0 overrides the grid item default (auto) so a long comment
+       cannot stretch the card past its fixed height; overflow then clips it. */
+    min-height: 0;
+    overflow: hidden;
     padding: 2mm;
   }}
   .move-card.depth-0 {{ border-left: 5px solid #1f2933; }}
@@ -406,7 +416,7 @@ def study_options_from_request(source: dict) -> StudyOptions:
     page_break = True if raw_page_break is None else as_bool(raw_page_break)
     return StudyOptions(
         title=raw_title or None,
-        columns=max(1, min(5, as_int(source.get("columns"), 3))),
+        columns=max(1, min(5, as_int(source.get("columns"), 2))),
         orientation=orientation,
         mainline_only=as_bool(source.get("mainlineOnly")),
         max_variation_depth=max(0, as_int(source.get("maxVariationDepth"), 4)),
