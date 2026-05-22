@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>오프닝 스터디 인쇄 - BlunderMate Lab</title>
+    <meta
+      name="description"
+      content="Lichess 스터디를 수마다 다이어그램이 붙은 인쇄용 오프닝 연구 시트로 만듭니다."
+    >
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f7f6;
+        --paper: #ffffff;
+        --ink: #172026;
+        --muted: #60717c;
+        --line: #d5dfdf;
+        --soft: #e9f1ef;
+        --teal: #176b66;
+        --teal-2: #0e514f;
+        --blue: #315f9f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Arial, "Malgun Gothic", sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .shell {
+        margin: 0 auto;
+        max-width: 640px;
+        padding: 40px 24px 64px;
+      }
+
+      .back {
+        color: var(--blue);
+        font-size: 13px;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        margin-top: 18px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: 26px;
+        margin: 6px 0 8px;
+      }
+
+      .lead {
+        color: var(--muted);
+        margin: 0 0 28px;
+      }
+
+      .surface {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 26px 24px;
+      }
+
+      .field {
+        margin-bottom: 18px;
+      }
+
+      .field:last-of-type {
+        margin-bottom: 0;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        margin-top: 4px;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      select {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        width: 100%;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .toggle {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 400;
+      }
+
+      .toggle input {
+        height: 16px;
+        width: 16px;
+      }
+
+      .actions {
+        border-top: 1px solid var(--line);
+        margin-top: 22px;
+        padding-top: 20px;
+      }
+
+      .primary {
+        background: var(--teal);
+        border: 0;
+        border-radius: 9px;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+        padding: 12px 18px;
+        width: 100%;
+      }
+
+      .primary:hover {
+        background: var(--teal-2);
+      }
+
+      .note {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <a class="back" href="/">← BlunderMate Lab</a>
+      <div class="brand-mark">Opening</div>
+      <h1>오프닝 스터디 인쇄</h1>
+      <p class="lead">
+        Lichess 스터디를 수마다 보드 다이어그램이 붙은 오프닝 연구 시트로 만듭니다.
+      </p>
+
+      <form class="surface" method="get" action="/api/study" target="_blank">
+        <div class="field">
+          <label for="study">Lichess 스터디 URL 또는 ID</label>
+          <input
+            id="study"
+            name="study"
+            type="text"
+            required
+            placeholder="https://lichess.org/study/xxxxxxxx"
+            autocomplete="off"
+          >
+          <div class="hint">URL에 챕터 ID까지 넣으면 해당 챕터만 출력합니다.</div>
+        </div>
+
+        <div class="field">
+          <label for="title">제목 (선택)</label>
+          <input id="title" name="title" type="text" placeholder="스터디 이름을 그대로 쓰려면 비워두세요" autocomplete="off">
+        </div>
+
+        <div class="field grid">
+          <div>
+            <label for="orientation">보드 방향</label>
+            <select id="orientation" name="orientation">
+              <option value="white">백 시점</option>
+              <option value="black">흑 시점</option>
+            </select>
+          </div>
+          <div>
+            <label for="columns">열 수</label>
+            <input id="columns" name="columns" type="number" value="3" min="1" max="5">
+          </div>
+          <div>
+            <label for="maxVariationDepth">변화수 깊이</label>
+            <input id="maxVariationDepth" name="maxVariationDepth" type="number" value="4" min="0" max="9">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="toggle">
+            <input type="checkbox" name="mainlineOnly" value="true">
+            변화수 빼고 메인라인만 출력
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="primary" type="submit">인쇄용 페이지 열기</button>
+          <p class="note">
+            새 탭에 인쇄용 시트가 열립니다. 거기서 인쇄 또는 PDF로 저장하세요.
+          </p>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

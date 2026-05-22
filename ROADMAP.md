@@ -14,6 +14,9 @@
 - [x] 문제지/정답지 분리 출력
 - [x] 인쇄용 미니멀 양식
 - [x] Instagram carousel PNG export
+- [x] Lichess 스터디 PDF 출력 (수마다 다이어그램)
+- [x] Lab 페이지 분리 (랜딩 허브 / `/puzzle` / `/opening`)
+- [x] `api/study.py` 스터디 렌더 엔드포인트 (study_core 공유)
 
 ## Next
 

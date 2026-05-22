@@ -11,9 +11,10 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from types import SimpleNamespace
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from make_puzzle_pdf import print_pdf, render_html, render_puzzle, select_puzzles
+from study_core import StudyError, error_page, render_study_from_request
 
 
 ROOT = Path(__file__).resolve().parent
@@ -315,6 +316,19 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
             self.serve_file(WEB_DIR / "index.html", "text/html; charset=utf-8")
             return
 
+        if path in {"/puzzle", "/puzzle.html"}:
+            self.serve_file(WEB_DIR / "puzzle.html", "text/html; charset=utf-8")
+            return
+
+        if path in {"/opening", "/opening.html"}:
+            self.serve_file(WEB_DIR / "opening.html", "text/html; charset=utf-8")
+            return
+
+        if path == "/api/study":
+            query = parse_qs(parsed.query)
+            self.send_study({key: values[0] for key, values in query.items() if values})
+            return
+
         if path == "/api/status":
             json_response(
                 self,
@@ -343,13 +357,17 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
-        if parsed.path not in {"/api/generate", "/api/preview", "/api/save-csv"}:
+        if parsed.path not in {"/api/generate", "/api/preview", "/api/save-csv", "/api/study"}:
             self.send_error(HTTPStatus.NOT_FOUND)
             return
 
         try:
             length = int(self.headers.get("Content-Length", "0"))
             payload = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
+
+            if parsed.path == "/api/study":
+                self.send_study(payload)
+                return
 
             if parsed.path == "/api/preview":
                 result = preview_puzzles(payload)
@@ -368,6 +386,23 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
             json_response(self, HTTPStatus.BAD_REQUEST, {"ok": False, "error": str(exc)})
         except Exception as exc:
             json_response(self, HTTPStatus.BAD_REQUEST, {"ok": False, "error": str(exc)})
+
+    def send_study(self, source: dict) -> None:
+        try:
+            body = render_study_from_request(source)
+            status = HTTPStatus.OK
+        except StudyError as exc:
+            body = error_page(str(exc))
+            status = HTTPStatus.BAD_REQUEST
+        except Exception as exc:
+            body = error_page(f"Unexpected error: {exc}")
+            status = HTTPStatus.INTERNAL_SERVER_ERROR
+        data = body.encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
 
     def serve_file(self, path: Path, content_type: str) -> None:
         body = path.read_bytes()

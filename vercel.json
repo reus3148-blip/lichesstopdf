@@ -5,5 +5,10 @@
   "buildCommand": "echo \"Using committed web/ directory\"",
   "outputDirectory": "web",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "functions": {
+    "api/study.py": {
+      "includeFiles": "study_core.py"
+    }
+  }
 }

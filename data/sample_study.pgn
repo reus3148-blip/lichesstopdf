@@ -1,0 +1,23 @@
+[Event "Italian Game: Core Ideas"]
+[Site "https://lichess.org/study/abcd1234/wxyz9876"]
+[Result "*"]
+[Variant "Standard"]
+[ECO "C50"]
+[Opening "Italian Game"]
+
+{ The Italian Game is one of the oldest recorded openings. White develops the
+bishop to its most natural square and eyes the f7 pawn. } 1. e4 e5 2. Nf3 Nc6
+3. Bc4 { Aiming straight at the weak f7 square. } Bc5 (3... Nf6 { The Two
+Knights Defense, a sharper try for Black. } 4. Ng5 { [%cal Gg5f7] An immediate
+strike at f7. } d5 5. exd5 Na5) 4. c3 { Preparing the d4 break. } Nf6 5. d4 exd4
+6. cxd4 Bb4+ 7. Nc3 { The Moeller Attack. } *
+
+[Event "Italian Game: Evans Gambit"]
+[Site "https://lichess.org/study/abcd1234/qrst5555"]
+[Result "*"]
+[ECO "C51"]
+[Opening "Evans Gambit"]
+
+{ The Evans Gambit sacrifices a pawn for fast development and central control. }
+1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 { The defining pawn sacrifice. } Bxb4
+5. c3 Ba5 (5... Be7 { A modern, solid retreat. } 6. d4 Na5) 6. d4 exd4 7. O-O *

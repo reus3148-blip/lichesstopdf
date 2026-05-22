@@ -6,7 +6,7 @@
     <title>BlunderMate Lab</title>
     <meta
       name="description"
-      content="BlunderMate Lab static MVP for printable chess puzzle sheets and chess tool experiments."
+      content="BlunderMate Lab - 체스 퍼즐과 오프닝 스터디를 인쇄용으로 만드는 도구 모음."
     >
     <style>
       :root {
@@ -20,11 +20,6 @@
         --teal: #176b66;
         --teal-2: #0e514f;
         --blue: #315f9f;
-        --gold: #b7791f;
-        --coral: #b84f43;
-        --green: #2f7d4f;
-        --light-square: #f0d9b5;
-        --dark-square: #b58863;
       }
 
       * {
@@ -40,1156 +35,121 @@
         margin: 0;
       }
 
-      button,
-      input,
-      select {
-        font: inherit;
-      }
-
-      .header-lookup {
-        align-items: center;
-        display: flex;
-        gap: 8px;
-      }
-
-      .header-lookup input {
-        background: #fff;
-        border: 1px solid #c4d1d1;
-        border-radius: 6px;
-        height: 36px;
-        padding: 6px 10px;
-        width: 200px;
-      }
-
-      .header-lookup button {
-        background: #fff;
-        border: 1px solid #b8c8c8;
-        border-radius: 6px;
-        color: var(--ink);
-        cursor: pointer;
-        font-weight: 700;
-        height: 36px;
-        min-height: 36px;
-        padding: 0 14px;
-        white-space: nowrap;
-      }
-
-      .header-lookup button:hover {
-        background: var(--soft);
-      }
-
-      button {
-        min-height: 40px;
-      }
-
-      a {
-        color: var(--blue);
-        font-weight: 700;
-      }
-
       .shell {
         margin: 0 auto;
-        max-width: 1320px;
-        padding: 16px 24px 24px;
-      }
-
-      .topbar {
-        align-items: center;
-        border-bottom: 1px solid var(--line);
-        display: flex;
-        gap: 18px;
-        justify-content: space-between;
-        padding: 4px 0 12px;
-      }
-
-      .brand {
-        align-items: baseline;
-        display: flex;
-        gap: 12px;
+        max-width: 880px;
+        padding: 48px 24px 64px;
       }
 
       .brand-mark {
         color: var(--teal);
         font-size: 13px;
         font-weight: 700;
-      }
-
-      h1,
-      h2,
-      h3,
-      p {
-        margin: 0;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
       }
 
       h1 {
-        font-size: 20px;
-        line-height: 1.1;
+        font-size: 30px;
+        margin: 6px 0 8px;
       }
 
-      .workspace {
+      .lead {
+        color: var(--muted);
+        margin: 0 0 36px;
+        max-width: 560px;
+      }
+
+      .tools {
         display: grid;
         gap: 20px;
-        grid-template-columns: minmax(460px, 540px) minmax(0, 1fr);
-        margin-top: 22px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       }
 
-      .surface {
+      .tool {
         background: var(--paper);
         border: 1px solid var(--line);
-        border-radius: 10px;
-        padding: 22px 24px;
-      }
-
-      .section-title {
-        align-items: center;
+        border-radius: 14px;
+        color: inherit;
         display: flex;
-        flex-wrap: wrap;
-        gap: 9px;
-        justify-content: space-between;
-        margin-bottom: 18px;
+        flex-direction: column;
+        gap: 8px;
+        padding: 26px 24px;
+        text-decoration: none;
+        transition: border-color 0.15s, transform 0.15s;
       }
 
-      .section-title h2 {
-        font-size: 19px;
+      .tool:hover {
+        border-color: var(--teal);
+        transform: translateY(-2px);
       }
 
-      .pill {
+      .tool-tag {
+        align-self: flex-start;
         background: var(--soft);
-        border: 1px solid #c9dbd7;
         border-radius: 999px;
         color: var(--teal-2);
         font-size: 12px;
         font-weight: 700;
-        padding: 3px 9px;
-        white-space: nowrap;
+        padding: 3px 10px;
       }
 
-      .field-grid {
-        display: grid;
-        gap: 12px;
-        grid-template-columns: 1fr 1fr;
+      .tool h2 {
+        font-size: 19px;
+        margin: 6px 0 0;
       }
 
-      .field {
-        display: grid;
-        gap: 5px;
-      }
-
-      .field.full {
-        grid-column: 1 / -1;
-      }
-
-      label {
+      .tool p {
         color: var(--muted);
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-      }
-
-      input,
-      select {
-        background: #fff;
-        border: 1px solid #c4d1d1;
-        border-radius: 6px;
-        color: var(--ink);
-        height: 40px;
-        min-width: 0;
-        padding: 7px 9px;
-        width: 100%;
-      }
-
-      .control {
-        display: grid;
-        gap: 8px;
-      }
-
-      .control + .control {
-        margin-top: 18px;
-      }
-
-      .control-row {
-        align-items: center;
-        grid-template-columns: auto 96px;
-        justify-content: start;
-      }
-
-      .control-row label {
-        margin-right: 10px;
-      }
-
-      .control-row input {
-        width: 96px;
-      }
-
-      .segment {
-        background: #f3f7f6;
-        border: 1px solid #c4d1d1;
-        border-radius: 8px;
-        display: grid;
-        gap: 0;
-        grid-auto-columns: 1fr;
-        grid-auto-flow: column;
-        overflow: hidden;
-      }
-
-      .segment button {
-        background: transparent;
-        border: 0;
-        border-right: 1px solid #d5dfdf;
-        color: var(--ink);
-        cursor: pointer;
         font-size: 14px;
+        margin: 0;
+      }
+
+      .tool-go {
+        color: var(--teal);
         font-weight: 700;
-        line-height: 1.15;
-        min-height: 48px;
-        overflow: hidden;
-        padding: 10px 6px;
-        text-overflow: ellipsis;
-        transition: background 0.12s ease, color 0.12s ease;
-        white-space: nowrap;
+        margin-top: 10px;
       }
 
-      .segment button:last-child {
-        border-right: 0;
-      }
-
-      .segment button:hover:not(.active) {
-        background: #e6efed;
-      }
-
-      .segment button.active {
-        background: var(--teal);
-        color: #fff;
-      }
-
-      .sub-wrap {
-        margin-top: 8px;
-      }
-
-      .sub-wrap[hidden] {
-        display: none;
-      }
-
-      .sub-wrap .segment {
-        background: #fafcfb;
-      }
-
-      .sub-wrap .segment button {
-        font-size: 13px;
-        font-weight: 600;
-        min-height: 40px;
-        padding: 8px 6px;
-      }
-
-      .toggle-row {
-        align-items: center;
-        display: flex;
-        gap: 9px;
-        margin-top: 14px;
-      }
-
-      .toggle-row input {
-        height: 18px;
-        width: 18px;
-      }
-
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 16px;
-      }
-
-      .primary,
-      .secondary {
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 700;
-        padding: 8px 14px;
-      }
-
-      .primary {
-        background: var(--teal);
-        border: 1px solid var(--teal);
-        color: #fff;
-      }
-
-      .primary:hover {
-        background: var(--teal-2);
-      }
-
-      .secondary {
-        background: #fff;
-        border: 1px solid #b8c8c8;
-        color: var(--ink);
-      }
-
-      .status {
-        border-left: 4px solid var(--teal);
-        color: var(--muted);
-        margin-top: 14px;
-        padding: 8px 11px;
-      }
-
-      .status.error {
-        border-color: var(--coral);
-        color: var(--coral);
-      }
-
-      .preview-head {
-        align-items: end;
-        display: flex;
-        gap: 16px;
-        justify-content: space-between;
-        margin-bottom: 14px;
-      }
-
-      .preview-head h2 {
-        font-size: 22px;
-      }
-
-      .preview-count {
-        color: var(--muted);
-        text-align: right;
-      }
-
-      .puzzle-grid {
-        display: grid;
-        gap: 14px;
-        grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
-      }
-
-      .puzzle-card {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        display: grid;
-        gap: 12px;
-        grid-template-columns: 210px minmax(0, 1fr);
-        min-width: 0;
-        padding: 12px;
-      }
-
-      .board {
-        aspect-ratio: 1;
-        border: 1px solid #6d553f;
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        grid-template-rows: repeat(8, 1fr);
-        position: relative;
-        width: 100%;
-      }
-
-      .arrow {
-        inset: 0;
-        pointer-events: none;
-        position: absolute;
-      }
-
-      .square {
-        align-items: center;
-        display: flex;
-        font-family: "Segoe UI Symbol", "Arial Unicode MS", serif;
-        font-size: 25px;
-        justify-content: center;
-        line-height: 1;
-        min-height: 0;
-        position: relative;
-      }
-
-      .square.light {
-        background: var(--light-square);
-      }
-
-      .square.dark {
-        background: var(--dark-square);
-      }
-
-      .square.last {
-        box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65);
-      }
-
-      .piece {
-        display: block;
-        height: 100%;
-        width: 100%;
-      }
-
-      .puzzle-copy {
-        display: grid;
-        gap: 8px;
-        min-width: 0;
-      }
-
-      .puzzle-title {
-        font-size: 16px;
-        font-weight: 700;
-      }
-
-      .muted {
+      footer {
         color: var(--muted);
         font-size: 13px;
+        margin-top: 44px;
       }
 
-      .tags {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      .tag {
-        background: #eef2f6;
-        border: 1px solid #d3dce6;
-        border-radius: 999px;
-        color: #34495f;
-        display: inline-block;
-        font-size: 11px;
-        font-weight: 600;
-        line-height: 1;
-        padding: 4px 9px;
-        white-space: nowrap;
-      }
-
-      @media (max-width: 1080px) {
-        .workspace,
-        .puzzle-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .puzzle-card {
-          grid-template-columns: 160px minmax(0, 1fr);
-        }
-      }
-
-      @media (max-width: 680px) {
-        .shell {
-          padding: 12px 14px 16px;
-        }
-
-        .topbar {
-          align-items: stretch;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .header-lookup input {
-          flex: 1;
-          width: auto;
-        }
-
-        .preview-head {
-          align-items: start;
-          display: grid;
-        }
-
-        .section-title {
-          align-items: start;
-          display: grid;
-          justify-content: start;
-        }
-
-        .preview-count {
-          text-align: left;
-        }
-
-        .puzzle-card {
-          grid-template-columns: 1fr;
-        }
-
-        .pill {
-          white-space: normal;
-        }
-
-        .puzzle-card .board {
-          max-width: 260px;
-        }
+      footer a {
+        color: var(--blue);
       }
     </style>
   </head>
   <body>
     <main class="shell">
-      <header class="topbar">
-        <div class="brand">
-          <div class="brand-mark">BlunderMate Lab</div>
-          <h1>Printable Puzzle Studio</h1>
-        </div>
-        <div class="header-lookup">
-          <input id="puzzleLookup" type="text" placeholder="퍼즐 코드 (예: PDmQk)" maxlength="40" aria-label="퍼즐 코드">
-          <button id="lookupButton" type="button">Lichess 열기</button>
-        </div>
-      </header>
+      <div class="brand-mark">BlunderMate Lab</div>
+      <h1>인쇄용 체스 도구</h1>
+      <p class="lead">
+        Lichess 데이터로 종이에 출력하기 좋은 자료를 만듭니다. 원하는 도구를 고르세요.
+      </p>
 
-      <div class="workspace">
-        <section class="surface" aria-labelledby="controls-title">
-          <div class="section-title">
-            <h2 id="controls-title">Sheet Builder</h2>
-            <span class="pill">Lichess DB</span>
-          </div>
+      <div class="tools">
+        <a class="tool" href="/puzzle">
+          <span class="tool-tag">Puzzle</span>
+          <h2>퍼즐 인쇄</h2>
+          <p>난이도와 테마로 고른 전술 퍼즐을 문제지·해답지로 출력합니다.</p>
+          <span class="tool-go">퍼즐 만들기 →</span>
+        </a>
 
-          <div class="control">
-            <label>난이도</label>
-            <div id="difficultySegment" class="segment"></div>
-          </div>
-
-          <div class="control">
-            <label>테마</label>
-            <div id="themeMajorSegment" class="segment"></div>
-            <div id="themeSubWrap" class="sub-wrap" hidden>
-              <div id="themeSubSegment" class="segment"></div>
-            </div>
-          </div>
-
-          <div class="control control-row">
-            <label for="count">문제 수</label>
-            <input id="count" type="number" value="4" min="1" max="12">
-          </div>
-
-          <label class="toggle-row">
-            <input id="includeAnswers" type="checkbox" checked>
-            해답 섹션 포함
-          </label>
-
-          <div class="actions">
-            <button id="loadButton" class="primary" type="button">퍼즐 불러오기</button>
-            <button id="printButton" class="secondary" type="button">PDF로 저장 / 인쇄</button>
-            <button id="resetButton" class="secondary" type="button">초기화</button>
-          </div>
-
-          <div id="status" class="status">퍼즐을 불러오는 중...</div>
-        </section>
-
-        <section class="surface" aria-labelledby="preview-title">
-          <div class="preview-head">
-            <div>
-              <h2 id="preview-title">Preview</h2>
-              <p class="muted">Lichess 퍼즐 데이터베이스</p>
-            </div>
-            <div id="previewCount" class="preview-count">0 puzzles</div>
-          </div>
-          <div id="puzzleGrid" class="puzzle-grid"></div>
-        </section>
+        <a class="tool" href="/opening">
+          <span class="tool-tag">Opening</span>
+          <h2>오프닝 스터디 인쇄</h2>
+          <p>Lichess 스터디를 수마다 다이어그램이 붙은 오프닝 연구 시트로 출력합니다.</p>
+          <span class="tool-go">스터디 만들기 →</span>
+        </a>
       </div>
+
+      <footer>
+        퍼즐 데이터는 <a href="https://database.lichess.org/#puzzles">Lichess open database</a>의
+        CC0 퍼즐을 사용합니다.
+      </footer>
     </main>
-
-    <script>
-      let PUZZLES = [];
-
-      const DIFFICULTY_ORDER = ["beginner", "intermediate", "advanced", "expert"];
-      const DIFFICULTY = {
-        beginner: { label: "초급", min: 0, max: 1400 },
-        intermediate: { label: "중급", min: 1400, max: 1800 },
-        advanced: { label: "고급", min: 1800, max: 2200 },
-        expert: { label: "전문가", min: 2200, max: 3500 }
-      };
-
-      const THEME_MAJOR = [
-        { id: "random", label: "랜덤" },
-        { id: "tactics", label: "전술" },
-        { id: "mate", label: "메이트" },
-        { id: "endgame", label: "엔드게임" }
-      ];
-
-      const THEME_SUB = {
-        tactics: [
-          { id: "random", label: "랜덤", themes: ["fork", "pin", "skewer", "discoveredAttack", "sacrifice", "attraction", "deflection", "hangingPiece"] },
-          { id: "fps", label: "포크·핀·스큐어", themes: ["fork", "pin", "skewer"] },
-          { id: "discovered", label: "디스커버드", themes: ["discoveredAttack"] },
-          { id: "other", label: "기타", themes: ["sacrifice", "attraction", "deflection", "hangingPiece", "xRayAttack", "interference", "clearance", "intermezzo"] }
-        ],
-        mate: [
-          { id: "random", label: "랜덤", themes: ["mate"] },
-          { id: "short", label: "1·2·3수", themes: ["mateIn1", "mateIn2", "mateIn3"] },
-          { id: "long", label: "4·5수", themes: ["mateIn4", "mateIn5"] },
-          { id: "other", label: "기타", themes: ["backRankMate", "smotheredMate", "anastasiaMate", "arabianMate", "bodenMate", "doubleBishopMate", "dovetailMate", "hookMate"] }
-        ],
-        endgame: [
-          { id: "random", label: "랜덤", themes: ["endgame"] },
-          { id: "rook", label: "룩", themes: ["rookEndgame"] },
-          { id: "pawn", label: "폰", themes: ["pawnEndgame"] },
-          { id: "other", label: "기타", themes: ["queenEndgame", "knightEndgame", "bishopEndgame", "queenRookEndgame"] }
-        ]
-      };
-
-      const FIXED_TITLE = "BlunderMate Lab Puzzle Set";
-      const FIXED_LAYOUT = "duo";
-      const FIXED_PIECE_SET = "cburnett";
-
-      function pieceCode(char) {
-        if (!char) return "";
-        return (char === char.toUpperCase() ? "w" : "b") + char.toUpperCase();
-      }
-
-      function currentPieceSet() {
-        return FIXED_PIECE_SET;
-      }
-
-      function turnInfo(fen) {
-        const active = (fen.split(" ")[1] || "w").toLowerCase();
-        // Lichess FEN is the position before the opponent's setup move,
-        // so the solver plays the opposite color of the FEN active color.
-        const color = active === "w" ? "black" : "white";
-        return { color: color, label: color === "black" ? "흑이 둘 차례" : "백이 둘 차례" };
-      }
-
-      const selection = {
-        difficulty: "intermediate",
-        themeMajor: "random",
-        themeSub: { tactics: "random", mate: "random", endgame: "random" }
-      };
-      const $ = (id) => document.getElementById(id);
-
-      function parseNumber(id, fallback) {
-        const value = Number($(id).value);
-        return Number.isFinite(value) ? value : fallback;
-      }
-
-      function squareIndex(square) {
-        const file = square.charCodeAt(0) - 97;
-        const rank = Number(square[1]);
-        return { row: 8 - rank, col: file };
-      }
-
-      function cloneBoard(board) {
-        return board.map((row) => row.slice());
-      }
-
-      function fenToPosition(fen) {
-        const parts = fen.split(" ");
-        const rows = parts[0].split("/").map((row) => {
-          const squares = [];
-          for (const char of row) {
-            if (/\d/.test(char)) {
-              for (let i = 0; i < Number(char); i += 1) squares.push("");
-            } else {
-              squares.push(char);
-            }
-          }
-          return squares;
-        });
-        return {
-          board: rows,
-          turn: parts[1] || "w",
-          enPassant: parts[3] || "-"
-        };
-      }
-
-      function applyUci(position, uci) {
-        const next = {
-          board: cloneBoard(position.board),
-          turn: position.turn === "w" ? "b" : "w",
-          enPassant: "-"
-        };
-        const from = squareIndex(uci.slice(0, 2));
-        const to = squareIndex(uci.slice(2, 4));
-        const promotion = uci[4];
-        const piece = next.board[from.row][from.col];
-
-        if (!piece) return next;
-
-        if (piece.toLowerCase() === "p" && position.enPassant === uci.slice(2, 4) && !next.board[to.row][to.col]) {
-          const capturedPawnRow = position.turn === "w" ? to.row + 1 : to.row - 1;
-          next.board[capturedPawnRow][to.col] = "";
-        }
-
-        next.board[from.row][from.col] = "";
-        next.board[to.row][to.col] = promotion
-          ? position.turn === "w"
-            ? promotion.toUpperCase()
-            : promotion.toLowerCase()
-          : piece;
-
-        if (piece.toLowerCase() === "k" && Math.abs(to.col - from.col) === 2) {
-          const rookFromCol = to.col > from.col ? 7 : 0;
-          const rookToCol = to.col > from.col ? 5 : 3;
-          next.board[to.row][rookToCol] = next.board[to.row][rookFromCol];
-          next.board[to.row][rookFromCol] = "";
-        }
-
-        return next;
-      }
-
-      function puzzlePosition(puzzle) {
-        const initial = fenToPosition(puzzle.fen);
-        const firstMove = puzzle.moves.split(" ")[0];
-        return applyUci(initial, firstMove);
-      }
-
-      function moveText(uci) {
-        if (!uci) return "";
-        const suffix = uci[4] ? `=${uci[4].toUpperCase()}` : "";
-        return `${uci.slice(0, 2)}-${uci.slice(2, 4)}${suffix}`;
-      }
-
-      function moveArrow(x1, y1, x2, y2) {
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const len = Math.hypot(dx, dy) || 1;
-        const ux = dx / len;
-        const uy = dy / len;
-        const head = 0.42;
-        const halfWidth = 0.27;
-        const baseX = x2 - ux * head;
-        const baseY = y2 - uy * head;
-        const wing1 = `${baseX - uy * halfWidth},${baseY + ux * halfWidth}`;
-        const wing2 = `${baseX + uy * halfWidth},${baseY - ux * halfWidth}`;
-        return `<svg class="arrow" viewBox="0 0 8 8" aria-hidden="true">` +
-          `<line x1="${x1}" y1="${y1}" x2="${baseX}" y2="${baseY}" stroke="#15781b" stroke-width="0.19" stroke-opacity="0.6" stroke-linecap="round"></line>` +
-          `<polygon points="${x2},${y2} ${wing1} ${wing2}" fill="#15781b" fill-opacity="0.6"></polygon>` +
-          `</svg>`;
-      }
-
-      function boardMarkup(puzzle, framed) {
-        const position = puzzlePosition(puzzle);
-        const firstMove = puzzle.moves.split(" ")[0];
-        const from = squareIndex(firstMove.slice(0, 2));
-        const to = squareIndex(firstMove.slice(2, 4));
-        const flipped = position.turn === "b";
-        const rows = flipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
-        const cols = flipped ? [7, 6, 5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5, 6, 7];
-        const set = currentPieceSet();
-        let squares = "";
-
-        rows.forEach((row) => {
-          cols.forEach((col) => {
-            const tone = (row + col) % 2 === 0 ? "light" : "dark";
-            const isLast = (row === from.row && col === from.col) || (row === to.row && col === to.col);
-            const code = pieceCode(position.board[row][col]);
-            const piece = code ? `<img class="piece" src="pieces/${set}/${code}.svg" alt="">` : "";
-            squares += `<div class="square ${tone}${isLast ? " last" : ""}">${piece}</div>`;
-          });
-        });
-
-        const ax1 = (flipped ? 7 - from.col : from.col) + 0.5;
-        const ay1 = (flipped ? 7 - from.row : from.row) + 0.5;
-        const ax2 = (flipped ? 7 - to.col : to.col) + 0.5;
-        const ay2 = (flipped ? 7 - to.row : to.row) + 0.5;
-        const board = `<div class="board" role="img" aria-label="Chess board">` +
-          squares + moveArrow(ax1, ay1, ax2, ay2) + `</div>`;
-        if (!framed) return board;
-
-        const files = cols.map((col) => `<span>${"abcdefgh"[col]}</span>`).join("");
-        const ranks = rows.map((row) => `<span>${8 - row}</span>`).join("");
-        return `<div class="board-frame">` +
-          `<div class="bf-left">${ranks}</div>` +
-          board +
-          `<div class="bf-bottom">${files}</div>` +
-          `</div>`;
-      }
-
-      function solutionMoves(puzzle) {
-        if (Array.isArray(puzzle.san) && puzzle.san.length) {
-          return puzzle.san.join(" ");
-        }
-        const moves = puzzle.moves.split(" ");
-        return moves.slice(1).map(moveText).join(" ");
-      }
-
-      function currentPuzzles() {
-        return PUZZLES;
-      }
-
-      function markStale() {
-        const status = $("status");
-        status.classList.remove("error");
-        status.textContent = "조건이 바뀌었습니다. '퍼즐 불러오기'를 다시 누르세요.";
-      }
-
-      function currentThemes() {
-        const major = selection.themeMajor;
-        if (major === "random") return [];
-        const subs = THEME_SUB[major] || [];
-        const sub = subs.find((item) => item.id === selection.themeSub[major]) || subs[0];
-        return sub ? sub.themes.slice() : [];
-      }
-
-      async function loadPuzzles() {
-        const button = $("loadButton");
-        const status = $("status");
-        button.disabled = true;
-        status.classList.remove("error");
-        status.textContent = "퍼즐을 불러오는 중...";
-        try {
-          const level = DIFFICULTY[selection.difficulty] || DIFFICULTY.intermediate;
-          const body = {
-            themes: currentThemes(),
-            match: "any",
-            minRating: level.min,
-            maxRating: level.max,
-            count: Math.max(1, Math.min(12, parseNumber("count", 4)))
-          };
-          const response = await fetch("/api/puzzles", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-          });
-          const data = await response.json().catch(() => ({}));
-          if (!response.ok) {
-            throw new Error(data.error || `요청 실패 (${response.status})`);
-          }
-          PUZZLES = Array.isArray(data.puzzles) ? data.puzzles : [];
-          renderPreview();
-        } catch (error) {
-          status.textContent = `퍼즐을 불러오지 못했습니다: ${error.message}`;
-          status.classList.add("error");
-        } finally {
-          button.disabled = false;
-        }
-      }
-
-      function segmentMarkup(items, activeId, dataKey) {
-        return items.map((item) => {
-          const active = item.id === activeId ? " active" : "";
-          return `<button type="button" class="${active.trim()}" data-${dataKey}="${item.id}">${item.label}</button>`;
-        }).join("");
-      }
-
-      function renderSegments() {
-        $("difficultySegment").innerHTML = segmentMarkup(
-          DIFFICULTY_ORDER.map((id) => ({ id: id, label: DIFFICULTY[id].label })),
-          selection.difficulty,
-          "difficulty"
-        );
-        $("themeMajorSegment").innerHTML = segmentMarkup(THEME_MAJOR, selection.themeMajor, "major");
-
-        const major = selection.themeMajor;
-        const wrap = $("themeSubWrap");
-        if (major === "random") {
-          wrap.hidden = true;
-          $("themeSubSegment").innerHTML = "";
-        } else {
-          wrap.hidden = false;
-          $("themeSubSegment").innerHTML = segmentMarkup(THEME_SUB[major] || [], selection.themeSub[major], "sub");
-        }
-      }
-
-      function moveCountLabel(puzzle) {
-        const count = Math.ceil((puzzle.moves.split(" ").length - 1) / 2);
-        const isMate = puzzle.themes.some((theme) => theme === "mate" || theme.indexOf("mateIn") === 0);
-        return count + (isMate ? "수 메이트" : "수");
-      }
-
-      function renderPreview() {
-        const puzzles = currentPuzzles();
-        $("previewCount").textContent = `${puzzles.length} puzzle${puzzles.length === 1 ? "" : "s"}`;
-        $("puzzleGrid").innerHTML = puzzles.map((puzzle, index) => `
-          <article class="puzzle-card">
-            ${boardMarkup(puzzle)}
-            <div class="puzzle-copy">
-              <div class="puzzle-title">${index + 1}. ${puzzle.id}</div>
-              <div class="muted">Rating ${puzzle.rating}</div>
-              <div class="muted">${puzzle.opening}</div>
-              <div class="tags">
-                ${puzzle.themes.slice(0, 5).map((theme) => `<span class="tag">${theme}</span>`).join("")}
-              </div>
-            </div>
-          </article>
-        `).join("");
-
-        const status = $("status");
-        if (puzzles.length) {
-          status.textContent = "";
-          status.classList.remove("error");
-        } else {
-          status.textContent = "조건에 맞는 퍼즐이 없습니다. 조건을 넓혀 보세요.";
-          status.classList.add("error");
-        }
-      }
-
-      function sheetContent() {
-        const puzzles = currentPuzzles();
-        const title = FIXED_TITLE;
-        const layout = FIXED_LAYOUT;
-        const includeAnswers = $("includeAnswers").checked;
-        const isCards = layout === "cards";
-        const isDuo = layout === "duo";
-        const total = puzzles.length;
-
-        const answerSection = includeAnswers ? `
-          <section class="answers">
-            <h2>정답</h2>
-            ${puzzles.map((puzzle, index) => {
-              const themes = Array.isArray(puzzle.themes) && puzzle.themes.length
-                ? `<div class="answer-themes">테마: ${puzzle.themes.join(" · ")}</div>`
-                : "";
-              return `
-                <div class="answer-item">
-                  <p class="answer-main"><strong>${index + 1}. ${puzzle.id}</strong> ${solutionMoves(puzzle)}</p>
-                  ${themes}
-                </div>
-              `;
-            }).join("")}
-          </section>
-        ` : "";
-
-        if (isCards) {
-          const cards = puzzles.map((puzzle, index) => {
-            const turn = turnInfo(puzzle.fen);
-            return `
-            <article class="print-card">
-              ${boardMarkup(puzzle, false)}
-              <div>
-                <h2>${index + 1}. ${puzzle.id}</h2>
-                <p class="to-move"><span class="dot ${turn.color}"></span>${turn.label}</p>
-                <p>Rating ${puzzle.rating}</p>
-                <p>${puzzle.opening}</p>
-                <p>${puzzle.themes.join(" · ")}</p>
-              </div>
-            </article>
-          `;
-          }).join("");
-          return {
-            title: title,
-            isCards: true,
-            body: `<header><h1>${title}</h1><p>Generated by BlunderMate Lab</p></header>` +
-              `<main class="sheet">${cards}</main>${answerSection}`
-          };
-        }
-
-        const levelLabel = (DIFFICULTY[selection.difficulty] || DIFFICULTY.intermediate).label;
-
-        if (isDuo) {
-          const items = puzzles.map((puzzle, index) => {
-            const turn = turnInfo(puzzle.fen);
-            const metaParts = [`Rating ${puzzle.rating}`];
-            if (puzzle.opening) metaParts.push(puzzle.opening);
-            return `
-            <div class="duo-item">
-              <div class="duo-left">
-                <div class="duo-header">
-                  <div class="duo-code">${index + 1}. ${puzzle.id}</div>
-                  <div class="duo-meta">${metaParts.join(" · ")}</div>
-                </div>
-                <div class="duo-board">${boardMarkup(puzzle, true)}</div>
-                <div class="duo-info"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)} · 난이도 ${levelLabel}</div>
-              </div>
-              <div class="duo-right"></div>
-            </div>
-          `;
-          });
-          const duoPages = [];
-          for (let i = 0; i < items.length; i += 2) {
-            duoPages.push(`<section class="page duo-page">${items.slice(i, i + 2).join("")}</section>`);
-          }
-          return { title: title, isCards: false, body: duoPages.join("") + answerSection };
-        }
-
-        const pages = puzzles.map((puzzle, index) => {
-          const turn = turnInfo(puzzle.fen);
-          return `
-          <section class="page">
-            <div class="page-head">
-              <span class="ph-num">문제 ${index + 1} / ${total}</span>
-              <span class="ph-turn"><span class="dot ${turn.color}"></span>${turn.label} · ${moveCountLabel(puzzle)}</span>
-              <span class="ph-level">난이도: ${levelLabel}</span>
-            </div>
-            <div class="page-board">${boardMarkup(puzzle, true)}</div>
-            <div class="work">
-              <div class="work-block">
-                <div class="work-title">후보 수</div>
-                <div class="ruled"></div>
-              </div>
-              <div class="work-block">
-                <div class="work-title">계산</div>
-                <div class="ruled tall"></div>
-              </div>
-              <div class="final-row"><span>최종 수</span><div class="final-line"></div></div>
-            </div>
-          </section>
-        `;
-        }).join("");
-        return { title: title, isCards: false, body: pages + answerSection };
-      }
-
-      function printableHtml() {
-        const { title, isCards, body } = sheetContent();
-        return `<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <base href="${location.origin}/">
-  <title>${title}</title>
-  <style>
-    @page { size: A4; margin: 0; }
-    * { box-sizing: border-box; }
-    html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    body { color: #171f25; font-family: Arial, "Malgun Gothic", sans-serif; margin: 24px; }
-    header { border-bottom: 1px solid #ccd7d7; margin-bottom: 22px; padding-bottom: 12px; }
-    h1 { font-size: 26px; margin: 0 0 4px; }
-    h2 { font-size: 16px; margin: 0 0 8px; }
-    p { font-size: 13px; margin: 0 0 6px; }
-    .page { break-before: page; padding: 14mm; }
-    .page:first-of-type { break-before: auto; }
-    .page-head {
-      align-items: center; border-bottom: 1px solid #1f2933;
-      display: grid; grid-template-columns: 1fr auto 1fr; padding-bottom: 4mm;
-    }
-    .ph-num { font-size: 12px; font-weight: 700; }
-    .ph-level { font-size: 12px; font-weight: 700; text-align: right; }
-    .ph-turn {
-      align-items: center; display: flex; font-size: 17px;
-      font-weight: 700; gap: 7px; justify-self: center;
-    }
-    .ph-turn .dot { height: 13px; width: 13px; }
-    .page-board { display: flex; justify-content: center; margin: 7mm 0; }
-    .page .board { width: 120mm; }
-    .work { display: grid; gap: 5mm; }
-    .work-title { font-size: 11px; font-weight: 700; margin-bottom: 2mm; }
-    .ruled {
-      background-image: repeating-linear-gradient(to bottom, transparent, transparent 7.8mm, #c9d2dc 7.8mm, #c9d2dc 8mm);
-      border: 1px solid #c9d2dc; height: 24mm;
-    }
-    .ruled.tall { height: 40mm; }
-    .final-row { align-items: center; display: grid; gap: 5mm; grid-template-columns: 24mm 1fr; }
-    .final-row span { font-size: 11px; font-weight: 700; }
-    .final-line { border-bottom: 2px solid #111827; height: 10mm; }
-    .duo-page { display: grid; grid-template-rows: 1fr 1fr; height: 297mm; padding: 0; }
-    .duo-item { display: grid; grid-template-columns: 105mm 105mm; }
-    .duo-item:first-child { border-bottom: 1px dashed #d4dadf; }
-    .duo-left {
-      align-content: center; border-right: 1px dashed #d4dadf;
-      display: grid; gap: 4mm; padding: 6mm 4mm 6mm 6mm;
-    }
-    .duo-right { padding: 6mm 6mm 6mm 4mm; }
-    .duo-header { display: grid; gap: 1mm; padding-left: 4mm; }
-    .duo-code { color: #172026; font-size: 14px; font-weight: 700; }
-    .duo-meta { color: #555; font-size: 11px; }
-    .duo-board { display: flex; justify-content: flex-start; }
-    .duo-info {
-      align-items: center; color: #333; display: flex;
-      font-size: 12px; font-weight: 600; gap: 6px;
-      justify-content: flex-start; padding-left: 4mm;
-    }
-    .duo-page .board { width: 90mm; }
-    .board-frame {
-      display: grid;
-      grid-template-columns: 4mm auto; grid-template-rows: auto 4mm;
-    }
-    .board-frame .board { grid-column: 2; grid-row: 1; }
-    .bf-left { display: grid; grid-column: 1; grid-row: 1; grid-template-rows: repeat(8, 1fr); }
-    .bf-bottom { display: grid; grid-column: 2; grid-row: 2; grid-template-columns: repeat(8, 1fr); }
-    .bf-left span, .bf-bottom span {
-      align-items: center; color: #333; display: flex;
-      font-size: 9px; font-weight: 700; justify-content: center;
-    }
-    .sheet { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .print-card {
-      align-content: start; border: 1px solid #cfdada; border-radius: 8px;
-      break-inside: avoid; display: grid; gap: 14px;
-      grid-template-columns: 1fr; padding: 14px;
-    }
-    .print-card .board { max-width: 320px; }
-    .board {
-      aspect-ratio: 1;
-      border: 1px solid #6d553f;
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      grid-template-rows: repeat(8, 1fr);
-      position: relative;
-      width: 100%;
-    }
-    .arrow { inset: 0; pointer-events: none; position: absolute; }
-    .square { align-items: center; display: flex; justify-content: center; }
-    .square.light { background: #f0d9b5; }
-    .square.dark { background: #b58863; }
-    .square.last { box-shadow: inset 0 0 0 3px rgba(23, 107, 102, 0.65); }
-    .piece { display: block; height: 100%; width: 100%; }
-    .to-move {
-      align-items: center; color: #333; display: flex;
-      font-size: 13px; font-weight: 600; gap: 6px; margin: 0 0 6px;
-    }
-    .dot {
-      border: 1px solid #333; border-radius: 50%; flex: none;
-      height: 11px; width: 11px;
-      -webkit-print-color-adjust: exact; print-color-adjust: exact;
-    }
-    .dot.black { background: #333; }
-    .dot.white { background: #ffffff; }
-    .answers { break-before: page; padding: 14mm; }
-    .answer-item { margin-bottom: 5mm; }
-    .answer-main { font-size: 13px; margin: 0 0 1mm; }
-    .answer-themes { color: #666; font-size: 11px; padding-left: 6mm; }
-    @media print { body { margin: ${isCards ? "14mm" : "0"}; } }
-  </style>
-</head>
-<body>${body}<script>window.addEventListener("load",function(){window.print();});<\/script></body>
-</html>`;
-      }
-
-      function openPrintable() {
-        const puzzles = currentPuzzles();
-        if (!puzzles.length) {
-          $("status").textContent = "먼저 조건에 맞는 퍼즐을 선택하세요.";
-          $("status").classList.add("error");
-          return;
-        }
-
-        const win = window.open("", "_blank");
-        if (!win) {
-          $("status").textContent = "새 창이 차단되었습니다. 브라우저 팝업을 허용해 주세요.";
-          $("status").classList.add("error");
-          return;
-        }
-        win.document.open();
-        win.document.write(printableHtml());
-        win.document.close();
-        win.focus();
-      }
-
-      function resetFilters() {
-        selection.difficulty = "intermediate";
-        selection.themeMajor = "random";
-        selection.themeSub = { tactics: "random", mate: "random", endgame: "random" };
-        $("count").value = 4;
-        $("includeAnswers").checked = true;
-        renderSegments();
-        loadPuzzles();
-      }
-
-      $("difficultySegment").addEventListener("click", (event) => {
-        const button = event.target.closest("[data-difficulty]");
-        if (!button) return;
-        selection.difficulty = button.dataset.difficulty;
-        renderSegments();
-        markStale();
-      });
-
-      $("themeMajorSegment").addEventListener("click", (event) => {
-        const button = event.target.closest("[data-major]");
-        if (!button) return;
-        selection.themeMajor = button.dataset.major;
-        renderSegments();
-        markStale();
-      });
-
-      $("themeSubSegment").addEventListener("click", (event) => {
-        const button = event.target.closest("[data-sub]");
-        if (!button) return;
-        const major = selection.themeMajor;
-        if (THEME_SUB[major]) selection.themeSub[major] = button.dataset.sub;
-        renderSegments();
-        markStale();
-      });
-
-      $("count").addEventListener("change", markStale);
-
-      $("loadButton").addEventListener("click", loadPuzzles);
-      $("printButton").addEventListener("click", openPrintable);
-      $("resetButton").addEventListener("click", resetFilters);
-
-      function openPuzzleLookup() {
-        const raw = $("puzzleLookup").value.trim();
-        if (!raw) return;
-        const code = raw.split("/").pop().split(/[?#]/)[0].replace(/[^A-Za-z0-9]/g, "");
-        if (code) window.open(`https://lichess.org/training/${code}`, "_blank", "noopener");
-      }
-
-      $("lookupButton").addEventListener("click", openPuzzleLookup);
-      $("puzzleLookup").addEventListener("keydown", (event) => {
-        if (event.key === "Enter") openPuzzleLookup();
-      });
-
-      renderSegments();
-      loadPuzzles();
-    </script>
   </body>
 </html>
