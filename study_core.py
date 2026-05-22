@@ -276,9 +276,11 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
 
     for index, chapter in enumerate(result.chapters):
         classes = ["study-section"]
-        # Short chapters are kept whole so a heading is never stranded at a
-        # page bottom; long ones flow so they are not clipped.
-        if len(chapter.cards) <= 2 * options.columns:
+        # Short chapters after the first are kept whole so a heading is never
+        # stranded at a page bottom. The first chapter must NOT do this: it
+        # follows the study header, and keeping it whole would shove the whole
+        # chapter onto page 2 and leave page 1 blank below the title.
+        if index > 0 and len(chapter.cards) <= 2 * options.columns:
             classes.append("is-short")
         if options.page_break_per_chapter and index > 0:
             classes.append("page-start")
