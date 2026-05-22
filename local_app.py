@@ -324,6 +324,10 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
             self.serve_file(WEB_DIR / "opening.html", "text/html; charset=utf-8")
             return
 
+        if path == "/tokens.css":
+            self.serve_file(WEB_DIR / "tokens.css", "text/css; charset=utf-8")
+            return
+
         if path == "/api/study":
             query = parse_qs(parsed.query)
             self.send_study({key: values[0] for key, values in query.items() if values})

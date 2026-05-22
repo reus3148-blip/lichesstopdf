@@ -1,0 +1,80 @@
+/* BlunderMate Lab — shared design tokens and base reset.
+   Linked by every Lab page so the palette has a single source of truth.
+   Mirrors the token system of the main blundermate.app site. */
+
+:root {
+  color-scheme: light;
+
+  /* Backgrounds — neutral paper */
+  --bg-base: #f7f7f8;
+  --bg-surface: #ffffff;
+  --bg-elevated: #efeff1;
+
+  /* Text — graphite */
+  --tx: #1c1d1f;
+  --tx2: #62646a;
+  --tx3: #9a9ca3;
+
+  /* Accent — ink blue */
+  --ac: #2b5bd7;
+  --ac-lo: rgba(43, 91, 215, 0.10);
+
+  /* Borders, dividers, press feedback */
+  --brd: rgba(28, 29, 31, 0.08);
+  --brd2: rgba(28, 29, 31, 0.16);
+  --list-divider: rgba(28, 29, 31, 0.06);
+  --press-fill: rgba(28, 29, 31, 0.05);
+
+  /* Card elevation — hairline ring instead of a hard border */
+  --card-ring: 0 1px 2px rgba(28, 29, 31, 0.04), 0 0 0 1px rgba(28, 29, 31, 0.06);
+
+  /* Status + chess board tones */
+  --coral: #d03832;
+  --light-square: #f0d9b5;
+  --dark-square: #b58863;
+
+  /* Type */
+  --font-sans: 'Inter', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--tx);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+/* Brand wordmark — blunder (graphite) + mate (accent), in mono */
+.brand-mark {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.brand-mark .b {
+  color: var(--tx);
+}
+
+.brand-mark .m {
+  color: var(--ac);
+}
+
+.brand-mark .lab {
+  color: var(--tx3);
+  font-weight: 600;
+}
