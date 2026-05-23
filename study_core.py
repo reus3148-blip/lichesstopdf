@@ -46,6 +46,9 @@ class StudyOptions:
     max_variation_depth: int = 4
     page_break_per_chapter: bool = True
     layout: str = "study"
+    # Book layout safety net: how many consecutive mainline moves may pass
+    # without a diagram before one is forced in. Ignored by other layouts.
+    book_max_run: int = 6
 
     @property
     def flipped(self) -> bool:
@@ -62,6 +65,9 @@ class MoveCard:
     svg: str
     comment: str
     depth: int
+    fullmove_number: int = 0
+    is_white_move: bool = True
+    san: str = ""
 
 
 @dataclass
@@ -176,6 +182,9 @@ def build_cards(game: chess.pgn.Game, flipped: bool, max_depth: int) -> list[Mov
             svg=render_board(after, node.move, node.arrows(), flipped),
             comment=clean_comment(node.starting_comment, node.comment),
             depth=depth,
+            fullmove_number=before.fullmove_number,
+            is_white_move=before.turn == chess.WHITE,
+            san=f"{san}{symbol}",
         )
 
     def walk(node: chess.pgn.GameNode, board: chess.Board, depth: int) -> None:
@@ -459,6 +468,208 @@ def _style(columns: int) -> str:
 </style>"""
 
 
+@dataclass
+class BookBlock:
+    """A unit of the book layout: either an inline SAN run or a diagram card."""
+    kind: str  # "run" or "diagram"
+    cards: list[MoveCard] = field(default_factory=list)  # populated when kind == "run"
+    card: MoveCard | None = None  # populated when kind == "diagram"
+
+
+def build_book_blocks(cards: list[MoveCard], max_run: int) -> list[BookBlock]:
+    """Group consecutive mainline moves with no comment into SAN runs.
+
+    A card becomes a diagram block when it has a comment, sits in a variation
+    (depth > 0), or follows a full run (safety net so the reader is never asked
+    to track more than `max_run` moves in their head before seeing the board).
+    """
+    blocks: list[BookBlock] = []
+    run: list[MoveCard] = []
+
+    def flush_run() -> None:
+        if run:
+            blocks.append(BookBlock(kind="run", cards=run.copy()))
+            run.clear()
+
+    for card in cards:
+        must_diagram = bool(card.comment) or card.depth > 0 or len(run) >= max(1, max_run)
+        if must_diagram:
+            flush_run()
+            blocks.append(BookBlock(kind="diagram", card=card))
+        else:
+            run.append(card)
+    flush_run()
+    return blocks
+
+
+def format_san_run(cards: list[MoveCard]) -> str:
+    """Render a list of mainline cards as compact PGN-style text.
+
+    Collapses paired white/black plies so the move number appears once per pair:
+    "4. Ba4 Nf6 5. O-O Be7". A black ply that opens a run gets the "N..." prefix.
+    """
+    pieces: list[str] = []
+    prev_white_number: int | None = None
+    for card in cards:
+        if card.is_white_move:
+            pieces.append(f"{card.fullmove_number}. {card.san}")
+            prev_white_number = card.fullmove_number
+        else:
+            if prev_white_number == card.fullmove_number:
+                pieces.append(card.san)
+            else:
+                pieces.append(f"{card.fullmove_number}... {card.san}")
+            prev_white_number = None
+    return " ".join(pieces)
+
+
+def render_book_html(result: StudyResult, options: StudyOptions) -> str:
+    """Render a study as a book: prose SAN runs with diagrams only where useful."""
+    body: list[str] = []
+    body.append("<!doctype html>")
+    body.append("<html lang=\"en\">")
+    body.append("<head>")
+    body.append("<meta charset=\"utf-8\">")
+    body.append(f"<title>{text(result.title)}</title>")
+    body.append(_book_style())
+    body.append("</head>")
+    body.append("<body>")
+
+    body.append("<div class=\"print-bar\">")
+    body.append("<button type=\"button\" onclick=\"window.print()\">인쇄 / PDF로 저장</button>")
+    body.append("</div>")
+
+    body.append("<header class=\"book-head\">")
+    body.append(f"<div class=\"book-title\">{text(result.title)}</div>")
+    sub = f"{len(result.chapters)} chapter(s)"
+    if result.source_note:
+        sub += f" - {result.source_note}"
+    body.append(f"<div class=\"book-sub\">{text(sub)}</div>")
+    body.append("</header>")
+
+    for index, chapter in enumerate(result.chapters):
+        classes = ["book-section"]
+        if options.page_break_per_chapter and index > 0:
+            classes.append("page-start")
+        body.append(f"<section class=\"{' '.join(classes)}\">")
+        body.append("<div class=\"chapter-head\">")
+        body.append(f"<div class=\"chapter-title\">{text(chapter.title)}</div>")
+        meta_line = chapter.meta
+        if chapter.site:
+            link = f"<a href=\"{text(chapter.site)}\">{text(chapter.site)}</a>"
+            meta_line = f"{meta_line} - {link}" if meta_line else link
+        if meta_line:
+            body.append(f"<div class=\"chapter-meta\">{meta_line}</div>")
+        body.append("</div>")
+
+        if chapter.intro:
+            body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
+
+        blocks = build_book_blocks(chapter.cards, options.book_max_run)
+        for block in blocks:
+            if block.kind == "run":
+                body.append(f"<p class=\"book-run\">{text(format_san_run(block.cards))}</p>")
+            else:
+                card = block.card
+                depth_class = f"depth-{min(card.depth, 3)}"
+                body.append(f"<figure class=\"book-diagram {depth_class}\">")
+                body.append(f"<div class=\"bd-board\">{card.svg}</div>")
+                body.append("<figcaption class=\"bd-text\">")
+                body.append(f"<div class=\"bd-label\">{text(card.label)}</div>")
+                if card.comment:
+                    body.append(f"<div class=\"bd-comment\">{text(card.comment)}</div>")
+                body.append("</figcaption>")
+                body.append("</figure>")
+        body.append("</section>")
+
+    body.append("</body>")
+    body.append("</html>")
+    return "\n".join(body)
+
+
+def _book_style() -> str:
+    return """<style>
+  @page { size: A4; margin: 16mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    color: #1f2933;
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 12.5px;
+    line-height: 1.55;
+    margin: 0;
+    max-width: 170mm;
+  }
+  a { color: #1f4f8f; text-decoration: none; }
+  .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
+  .print-bar button {
+    background: #176b66;
+    border: 0;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    padding: 8px 14px;
+  }
+  .book-head {
+    border-bottom: 2px solid #1f2933;
+    margin-bottom: 6mm;
+    padding-bottom: 3mm;
+  }
+  .book-title { font-size: 22px; font-weight: 800; font-family: Arial, Helvetica, sans-serif; }
+  .book-sub { color: #52606d; font-size: 11px; margin-top: 1mm; font-family: Arial, Helvetica, sans-serif; }
+  .book-section { margin-top: 8mm; }
+  .book-section:first-of-type { margin-top: 0; }
+  .book-section.page-start { break-before: page; margin-top: 0; }
+  .chapter-head {
+    border-bottom: 1px solid #c9d2dc;
+    break-after: avoid;
+    margin-bottom: 4mm;
+    padding-bottom: 2mm;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .chapter-title { font-size: 16px; font-weight: 700; }
+  .chapter-meta { color: #52606d; font-size: 10px; margin-top: 1mm; }
+  .chapter-intro {
+    color: #3a4754;
+    font-size: 12px;
+    line-height: 1.55;
+    margin: 0 0 5mm;
+  }
+  /* SAN runs read like book prose, slightly indented and in a mono-ish weight. */
+  .book-run {
+    font-family: "Cambria Math", "Georgia", serif;
+    font-size: 12.5px;
+    margin: 0 0 3mm;
+    text-indent: 4mm;
+    text-align: justify;
+  }
+  .book-diagram {
+    align-items: flex-start;
+    break-inside: avoid;
+    display: flex;
+    gap: 5mm;
+    margin: 0 0 5mm;
+    padding: 2mm 2mm 2mm 0;
+  }
+  /* Variation depth is shown with a left border and grey shade so it survives
+     mono printing, matching the study layout. */
+  .book-diagram.depth-0 { border-left: 4px solid #1f2933; padding-left: 3mm; }
+  .book-diagram.depth-1 { background: #f2f3f4; border-left: 4px solid #8b95a1; padding-left: 3mm; }
+  .book-diagram.depth-2 { background: #eaebed; border-left: 4px dashed #6b7480; padding-left: 3mm; }
+  .book-diagram.depth-3 { background: #e2e4e7; border-left: 4px dotted #6b7480; padding-left: 3mm; }
+  .bd-board { flex: 0 0 60mm; }
+  .bd-board svg { display: block; height: auto; width: 100%; }
+  .bd-text {
+    flex: 1 1 auto;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .bd-label { font-size: 13px; font-weight: 700; margin-bottom: 1.5mm; }
+  .bd-comment { color: #3a4754; font-size: 11px; line-height: 1.5; }
+  @media print { .print-bar { display: none; } }
+</style>"""
+
+
 def render_game_html(result: StudyResult, options: StudyOptions) -> str:
     """Render a game PGN as a compact diagram sheet: 8 boards per A4 page."""
     body: list[str] = []
@@ -582,7 +793,8 @@ def study_options_from_request(source: dict) -> StudyOptions:
     orientation = "black" if str(source.get("orientation") or "white").lower() == "black" else "white"
     raw_page_break = source.get("pageBreakPerChapter")
     page_break = True if raw_page_break is None else as_bool(raw_page_break)
-    layout = "game" if str(source.get("layout") or "study").lower() == "game" else "study"
+    layout_raw = str(source.get("layout") or "study").lower()
+    layout = layout_raw if layout_raw in ("study", "game", "book") else "study"
     return StudyOptions(
         title=raw_title or None,
         columns=max(1, min(5, as_int(source.get("columns"), 2))),
@@ -591,6 +803,7 @@ def study_options_from_request(source: dict) -> StudyOptions:
         max_variation_depth=max(0, as_int(source.get("maxVariationDepth"), 4)),
         page_break_per_chapter=page_break,
         layout=layout,
+        book_max_run=max(1, as_int(source.get("maxMovesWithoutDiagram"), 6)),
     )
 
 
@@ -619,6 +832,8 @@ def render_study_from_request(source: dict) -> str:
         )
     if options.layout == "game":
         return render_game_html(result, options)
+    if options.layout == "book":
+        return render_book_html(result, options)
     return render_study_html(result, options)
 
 

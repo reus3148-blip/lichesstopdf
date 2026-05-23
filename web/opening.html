@@ -212,6 +212,17 @@
           <input id="title" name="title" type="text" placeholder="스터디 이름을 그대로 쓰려면 비워두세요" autocomplete="off">
         </div>
 
+        <div class="field">
+          <label for="layout">표시 방식</label>
+          <select id="layout" name="layout">
+            <option value="study" selected>수마다 보드 다이어그램 (스터디)</option>
+            <option value="book">책처럼 코멘트 있는 곳만 보드 + SAN 흐름</option>
+          </select>
+          <div class="hint">
+            "책" 방식은 코멘트가 달린 수에만 보드를 띄우고, 나머지는 `1. e4 e5 2. Nf3` 형태로 이어 보여줍니다.
+          </div>
+        </div>
+
         <div class="field grid">
           <div>
             <label for="orientation">보드 방향</label>
@@ -223,10 +234,16 @@
           <div>
             <label for="columns">칸 수 (N×N)</label>
             <input id="columns" name="columns" type="number" value="2" min="1" max="5">
+            <div class="hint">스터디 방식일 때만 적용</div>
           </div>
           <div>
             <label for="maxVariationDepth">변화수 깊이</label>
             <input id="maxVariationDepth" name="maxVariationDepth" type="number" value="4" min="0" max="9">
+          </div>
+          <div>
+            <label for="maxMovesWithoutDiagram">책 모드: 보드 없이 최대</label>
+            <input id="maxMovesWithoutDiagram" name="maxMovesWithoutDiagram" type="number" value="6" min="1" max="20">
+            <div class="hint">이만큼 수가 지나면 안전장치로 보드를 한 장 끼웁니다.</div>
           </div>
         </div>
 

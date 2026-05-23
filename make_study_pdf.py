@@ -9,6 +9,7 @@ from study_core import (
     StudyOptions,
     fetch_study,
     prepare_study,
+    render_book_html,
     render_game_html,
     render_study_html,
 )
@@ -47,9 +48,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mainline-only", action="store_true", help="Skip every variation, keep only main lines.")
     parser.add_argument(
         "--layout",
-        choices=["study", "game"],
+        choices=["study", "game", "book"],
         default="study",
-        help="study: per-move grid with comments. game: compact sheet of 8 diagrams per page.",
+        help=(
+            "study: per-move grid with comments. game: compact sheet of 8 diagrams "
+            "per page. book: prose-like SAN runs with diagrams only at commented moves."
+        ),
+    )
+    parser.add_argument(
+        "--max-moves-without-diagram",
+        type=int,
+        default=6,
+        help=(
+            "book layout only: force a diagram after this many consecutive moves "
+            "without one, so the reader never has to track too many plies in their head."
+        ),
     )
     parser.add_argument(
         "--page-break-per-chapter",
@@ -71,6 +84,7 @@ def main() -> int:
         max_variation_depth=args.max_variation_depth,
         page_break_per_chapter=args.page_break_per_chapter,
         layout=args.layout,
+        book_max_run=max(1, args.max_moves_without_diagram),
     )
 
     try:
@@ -87,6 +101,8 @@ def main() -> int:
 
     if options.layout == "game":
         html_doc = render_game_html(result, options)
+    elif options.layout == "book":
+        html_doc = render_book_html(result, options)
     else:
         html_doc = render_study_html(result, options)
     html_path = args.html or args.output.with_suffix(".html")
