@@ -14,7 +14,12 @@ from types import SimpleNamespace
 from urllib.parse import parse_qs, unquote, urlparse
 
 from make_puzzle_pdf import print_pdf, render_html, render_puzzle, select_puzzles
-from study_core import StudyError, error_page, render_study_from_request
+from study_core import (
+    StudyError,
+    error_page,
+    list_chapters_from_request,
+    render_study_from_request,
+)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -337,6 +342,11 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
             self.send_study({key: values[0] for key, values in query.items() if values})
             return
 
+        if path == "/api/chapters":
+            query = parse_qs(parsed.query)
+            self.send_chapters({key: values[0] for key, values in query.items() if values})
+            return
+
         if path == "/api/status":
             json_response(
                 self,
@@ -365,7 +375,13 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
-        if parsed.path not in {"/api/generate", "/api/preview", "/api/save-csv", "/api/study"}:
+        if parsed.path not in {
+            "/api/generate",
+            "/api/preview",
+            "/api/save-csv",
+            "/api/study",
+            "/api/chapters",
+        }:
             self.send_error(HTTPStatus.NOT_FOUND)
             return
 
@@ -373,12 +389,15 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
             raw = self.rfile.read(length).decode("utf-8") if length else ""
 
-            if parsed.path == "/api/study":
+            if parsed.path in {"/api/study", "/api/chapters"}:
                 if "form-urlencoded" in self.headers.get("Content-Type", ""):
                     payload = {key: values[0] for key, values in parse_qs(raw).items() if values}
                 else:
                     payload = json.loads(raw or "{}")
-                self.send_study(payload)
+                if parsed.path == "/api/study":
+                    self.send_study(payload)
+                else:
+                    self.send_chapters(payload)
                 return
 
             payload = json.loads(raw or "{}")
@@ -417,6 +436,19 @@ class LocalAppHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def send_chapters(self, source: dict) -> None:
+        try:
+            chapters = list_chapters_from_request(source)
+            json_response(self, HTTPStatus.OK, {"ok": True, "chapters": chapters})
+        except StudyError as exc:
+            json_response(self, HTTPStatus.BAD_REQUEST, {"ok": False, "error": str(exc)})
+        except Exception as exc:  # noqa: BLE001
+            json_response(
+                self,
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+                {"ok": False, "error": f"Unexpected error: {exc}"},
+            )
 
     def serve_file(self, path: Path, content_type: str) -> None:
         body = path.read_bytes()

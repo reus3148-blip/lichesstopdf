@@ -49,6 +49,8 @@ class StudyOptions:
     # Book layout safety net: how many consecutive mainline moves may pass
     # without a diagram before one is forced in. Ignored by other layouts.
     book_max_run: int = 6
+    # 1-based indices of chapters to keep. Empty/None means keep all.
+    chapter_indices: list[int] | None = None
 
     @property
     def flipped(self) -> bool:
@@ -283,10 +285,61 @@ def game_chapter_from_game(
     )
 
 
+def _filter_games(
+    games: list[chess.pgn.Game], indices: list[int] | None
+) -> list[chess.pgn.Game]:
+    """Keep only the chapters at the given 1-based indices (preserving order).
+
+    Out-of-range indices are silently dropped. An empty/None list keeps all games
+    so callers don't have to special-case the "no filter" path.
+    """
+    if not indices:
+        return games
+    keep = {i for i in indices if 1 <= i <= len(games)}
+    if not keep:
+        raise StudyError(
+            "None of the selected chapter numbers exist in this study."
+        )
+    return [game for index, game in enumerate(games, start=1) if index in keep]
+
+
+def list_chapters(pgn_text: str) -> list[dict]:
+    """Extract chapter metadata for a chapter-picker UI.
+
+    Returns one dict per game: {index, name, meta}. `index` is 1-based.
+    """
+    games = read_games(pgn_text)
+    out: list[dict] = []
+    for index, game in enumerate(games, start=1):
+        event = game.headers.get("Event", "").strip()
+        if ": " in event:
+            _, chapter_name = event.split(": ", 1)
+        else:
+            chapter_name = event
+        chapter_name = chapter_name.strip() or f"Chapter {index}"
+
+        # Meta line: prefer player names for game-style PGNs, else ECO/Opening.
+        white = game.headers.get("White", "").strip()
+        black = game.headers.get("Black", "").strip()
+        if white and black and white != "?" and black != "?":
+            meta = f"{white} – {black}"
+        else:
+            meta_bits: list[str] = []
+            for tag in ("ECO", "Opening"):
+                value = game.headers.get(tag, "").strip()
+                if value and value != "?":
+                    meta_bits.append(value)
+            meta = " - ".join(meta_bits)
+
+        out.append({"index": index, "name": chapter_name, "meta": meta})
+    return out
+
+
 def prepare_study(pgn_text: str, source_note: str, options: StudyOptions) -> StudyResult:
     games = read_games(pgn_text)
     if not games:
         raise StudyError("No chapters were found in the PGN.")
+    games = _filter_games(games, options.chapter_indices)
 
     if options.layout == "game":
         chapters = [
@@ -804,7 +857,58 @@ def study_options_from_request(source: dict) -> StudyOptions:
         page_break_per_chapter=page_break,
         layout=layout,
         book_max_run=max(1, as_int(source.get("maxMovesWithoutDiagram"), 6)),
+        chapter_indices=parse_chapter_selection(source.get("chapters")),
     )
+
+
+def parse_chapter_selection(value: object) -> list[int] | None:
+    """Parse a chapter selection like '1,3,5-7' into a sorted list of indices.
+
+    Accepts the value as a string ('1,3'), a list (['1','3']) or None.
+    Returns None when nothing is selected so the caller treats it as "all".
+    """
+    if value is None:
+        return None
+    if isinstance(value, (list, tuple)):
+        tokens = [str(v) for v in value]
+    else:
+        tokens = str(value).replace(";", ",").split(",")
+    out: set[int] = set()
+    for token in tokens:
+        token = token.strip()
+        if not token:
+            continue
+        if "-" in token:
+            lo_s, hi_s = token.split("-", 1)
+            try:
+                lo, hi = int(lo_s), int(hi_s)
+            except ValueError:
+                continue
+            if lo > hi:
+                lo, hi = hi, lo
+            out.update(range(max(1, lo), hi + 1))
+        else:
+            try:
+                index = int(token)
+            except ValueError:
+                continue
+            if index >= 1:
+                out.add(index)
+    return sorted(out) or None
+
+
+def list_chapters_from_request(source: dict) -> list[dict]:
+    """Fetch + parse a study's chapter list, for the chapter-picker UI.
+
+    Accepts the same {study, pgn} inputs as render_study_from_request.
+    """
+    pgn_text = str(source.get("pgn") or "").strip()
+    if not pgn_text:
+        ref = str(source.get("study") or "").strip()
+        if not ref:
+            raise StudyError("Provide a Lichess study URL/id or PGN text.")
+        pgn_text, _ = fetch_study(ref)
+    return list_chapters(pgn_text)
 
 
 def render_study_from_request(source: dict) -> str:

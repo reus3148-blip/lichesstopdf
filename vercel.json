@@ -9,6 +9,9 @@
   "functions": {
     "api/study.py": {
       "includeFiles": "study_core.py"
+    },
+    "api/chapters.py": {
+      "includeFiles": "study_core.py"
     }
   }
 }

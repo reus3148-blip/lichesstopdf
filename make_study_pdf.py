@@ -8,6 +8,7 @@ from study_core import (
     StudyError,
     StudyOptions,
     fetch_study,
+    parse_chapter_selection,
     prepare_study,
     render_book_html,
     render_game_html,
@@ -65,6 +66,13 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--chapters",
+        help=(
+            "Only print the listed chapters (1-based). Accepts a comma list and "
+            "ranges, e.g. '1,3,5-7'. Default keeps every chapter."
+        ),
+    )
+    parser.add_argument(
         "--page-break-per-chapter",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -85,6 +93,7 @@ def main() -> int:
         page_break_per_chapter=args.page_break_per_chapter,
         layout=args.layout,
         book_max_run=max(1, args.max_moves_without_diagram),
+        chapter_indices=parse_chapter_selection(args.chapters),
     )
 
     try:

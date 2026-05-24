@@ -175,6 +175,114 @@
         font-size: 12px;
         margin-top: 12px;
       }
+
+      .secondary {
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        border-radius: 8px;
+        color: var(--tx);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 14px;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+
+      .secondary:hover {
+        background: var(--bg);
+        border-color: var(--ac);
+      }
+
+      .secondary:disabled {
+        cursor: wait;
+        opacity: 0.6;
+      }
+
+      .chapter-bar {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      .chapter-status {
+        color: var(--tx2);
+        font-size: 12px;
+      }
+
+      .chapter-status.is-error {
+        color: #b3261e;
+      }
+
+      .chapter-list {
+        background: var(--bg);
+        border: 1px solid var(--brd);
+        border-radius: 8px;
+        display: none;
+        margin-top: 10px;
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 10px 12px;
+      }
+
+      .chapter-list.is-visible {
+        display: block;
+      }
+
+      .chapter-list-head {
+        align-items: center;
+        border-bottom: 1px solid var(--brd);
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+      }
+
+      .chapter-list-head .count {
+        color: var(--tx2);
+        font-size: 12px;
+      }
+
+      .chapter-list-head .bulk {
+        background: transparent;
+        border: 0;
+        color: var(--ac);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 0;
+      }
+
+      .chapter-list-head .bulk:hover {
+        text-decoration: underline;
+      }
+
+      .chapter-item {
+        align-items: flex-start;
+        display: flex;
+        gap: 8px;
+        padding: 4px 0;
+      }
+
+      .chapter-item input {
+        accent-color: var(--ac);
+        height: 15px;
+        margin-top: 2px;
+        width: 15px;
+      }
+
+      .chapter-item .name {
+        color: var(--tx);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .chapter-item .meta {
+        color: var(--tx3);
+        font-size: 11px;
+      }
     </style>
   </head>
   <body>
@@ -193,7 +301,7 @@
         Lichess 스터디를 수마다 보드 다이어그램이 붙은 오프닝 연구 시트로 만듭니다.
       </p>
 
-      <form class="surface" method="get" action="/api/study" target="_blank">
+      <form id="study-form" class="surface" method="get" action="/api/study" target="_blank">
         <div class="field">
           <label for="study">Lichess 스터디 URL 또는 ID</label>
           <input
@@ -205,6 +313,18 @@
             autocomplete="off"
           >
           <div class="hint">URL에 챕터 ID까지 넣으면 해당 챕터만 출력합니다.</div>
+          <div class="chapter-bar">
+            <button id="load-chapters" class="secondary" type="button">챕터 불러오기</button>
+            <span id="chapter-status" class="chapter-status"></span>
+          </div>
+          <div id="chapter-list" class="chapter-list" aria-live="polite">
+            <div class="chapter-list-head">
+              <span class="count"><span id="chapter-count">0</span>개 챕터 — 인쇄할 챕터 선택</span>
+              <button id="chapter-bulk" class="bulk" type="button">전체 해제</button>
+            </div>
+            <div id="chapter-items"></div>
+          </div>
+          <input id="chapter-indices" type="hidden" name="chapters" disabled>
         </div>
 
         <div class="field">
@@ -270,5 +390,131 @@
         </div>
       </form>
     </main>
+    <script>
+      (function () {
+        const form = document.getElementById("study-form");
+        const studyInput = document.getElementById("study");
+        const loadBtn = document.getElementById("load-chapters");
+        const status = document.getElementById("chapter-status");
+        const list = document.getElementById("chapter-list");
+        const items = document.getElementById("chapter-items");
+        const countEl = document.getElementById("chapter-count");
+        const bulkBtn = document.getElementById("chapter-bulk");
+        const hidden = document.getElementById("chapter-indices");
+
+        function setStatus(text, isError) {
+          status.textContent = text || "";
+          status.classList.toggle("is-error", !!isError);
+        }
+
+        function clearList() {
+          items.innerHTML = "";
+          list.classList.remove("is-visible");
+          countEl.textContent = "0";
+        }
+
+        // The "chapters" field is only sent when the user has explicitly picked
+        // a subset. Otherwise the server keeps its existing "all chapters"
+        // default, which keeps the URL clean and the form forward-compatible.
+        function syncSelection() {
+          const checks = items.querySelectorAll("input[type=checkbox]");
+          const selected = Array.from(checks)
+            .filter((c) => c.checked)
+            .map((c) => c.value);
+          if (!checks.length || selected.length === checks.length) {
+            hidden.disabled = true;
+            hidden.value = "";
+          } else {
+            hidden.disabled = false;
+            hidden.value = selected.join(",");
+          }
+          const allChecked = selected.length === checks.length && checks.length > 0;
+          bulkBtn.textContent = allChecked ? "전체 해제" : "전체 선택";
+        }
+
+        bulkBtn.addEventListener("click", () => {
+          const checks = items.querySelectorAll("input[type=checkbox]");
+          const allChecked = Array.from(checks).every((c) => c.checked);
+          checks.forEach((c) => { c.checked = !allChecked; });
+          syncSelection();
+        });
+
+        items.addEventListener("change", (event) => {
+          if (event.target && event.target.matches("input[type=checkbox]")) {
+            syncSelection();
+          }
+        });
+
+        // Reset the picker the moment the study URL changes so a stale chapter
+        // list from a previous study can't sneak into a new submission.
+        studyInput.addEventListener("input", () => {
+          clearList();
+          setStatus("");
+          hidden.disabled = true;
+        });
+
+        loadBtn.addEventListener("click", async () => {
+          const value = studyInput.value.trim();
+          if (!value) {
+            setStatus("먼저 스터디 URL 또는 ID를 입력하세요.", true);
+            return;
+          }
+          loadBtn.disabled = true;
+          setStatus("불러오는 중...");
+          clearList();
+          try {
+            const url = "/api/chapters?study=" + encodeURIComponent(value);
+            const res = await fetch(url, { headers: { "Accept": "application/json" } });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+              throw new Error(data.error || ("HTTP " + res.status));
+            }
+            const chapters = data.chapters || [];
+            if (!chapters.length) {
+              setStatus("이 스터디에는 챕터가 없습니다.", true);
+              return;
+            }
+            countEl.textContent = String(chapters.length);
+            chapters.forEach((ch) => {
+              const id = "ch-" + ch.index;
+              const row = document.createElement("label");
+              row.className = "chapter-item";
+              row.htmlFor = id;
+              const cb = document.createElement("input");
+              cb.type = "checkbox";
+              cb.id = id;
+              cb.value = String(ch.index);
+              cb.checked = true;
+              const text = document.createElement("span");
+              const name = document.createElement("span");
+              name.className = "name";
+              name.textContent = ch.index + ". " + (ch.name || ("Chapter " + ch.index));
+              text.appendChild(name);
+              if (ch.meta) {
+                const meta = document.createElement("div");
+                meta.className = "meta";
+                meta.textContent = ch.meta;
+                text.appendChild(meta);
+              }
+              row.appendChild(cb);
+              row.appendChild(text);
+              items.appendChild(row);
+            });
+            list.classList.add("is-visible");
+            setStatus(chapters.length + "개 챕터를 불러왔습니다.");
+            syncSelection();
+          } catch (err) {
+            setStatus("불러오기 실패: " + (err && err.message ? err.message : err), true);
+          } finally {
+            loadBtn.disabled = false;
+          }
+        });
+
+        // Final guard before submit: if no chapter list was loaded the hidden
+        // input stays disabled (== send all). If one was loaded, syncSelection
+        // already reflects the user's choice.
+        form.addEventListener("submit", syncSelection);
+      })();
+    </script>
   </body>
 </html>
