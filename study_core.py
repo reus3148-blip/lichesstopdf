@@ -693,6 +693,16 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
         # rhythm — both cells in a row share the row's height, so the
         # boards in that row stay top-aligned with each other.
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
+        # When the user opted into "skip uncommented", drop every diagram
+        # that carries no comment — including variation diagrams, which
+        # `build_book_blocks` would otherwise always emit because they sit
+        # off the mainline. SAN runs are preserved so the move flow stays
+        # readable.
+        if options.skip_uncommented:
+            blocks = [
+                block for block in blocks
+                if block.kind == "run" or (block.card and block.card.comment)
+            ]
         pending_runs: list[str] = []
         for block in blocks:
             if block.kind == "run":
