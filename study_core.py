@@ -51,6 +51,9 @@ class StudyOptions:
     book_max_run: int = 6
     # 1-based indices of chapters to keep. Empty/None means keep all.
     chapter_indices: list[int] | None = None
+    # Study layout: drop cards that carry no comment so the sheet only shows
+    # the moves worth pausing on. Ignored by book/game layouts.
+    skip_uncommented: bool = False
 
     @property
     def flipped(self) -> bool:
@@ -376,6 +379,7 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
     body.append("<html lang=\"en\">")
     body.append("<head>")
     body.append("<meta charset=\"utf-8\">")
+    body.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
     body.append(f"<title>{text(result.title)}</title>")
     body.append(_style(options.columns))
     body.append("</head>")
@@ -394,12 +398,19 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
     body.append("</header>")
 
     for index, chapter in enumerate(result.chapters):
+        # Drop uncommented cards before measuring length so the "is-short"
+        # heuristic sees the layout the reader will actually get.
+        cards = (
+            [card for card in chapter.cards if card.comment]
+            if options.skip_uncommented
+            else chapter.cards
+        )
         classes = ["study-section"]
         # Short chapters after the first are kept whole so a heading is never
         # stranded at a page bottom. The first chapter must NOT do this: it
         # follows the study header, and keeping it whole would shove the whole
         # chapter onto page 2 and leave page 1 blank below the title.
-        if index > 0 and len(chapter.cards) <= 2 * options.columns:
+        if index > 0 and len(cards) <= 2 * options.columns:
             classes.append("is-short")
         if options.page_break_per_chapter and index > 0:
             classes.append("page-start")
@@ -418,7 +429,7 @@ def render_study_html(result: StudyResult, options: StudyOptions) -> str:
             body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
         body.append("<div class=\"move-grid\">")
-        for card in chapter.cards:
+        for card in cards:
             classes = f"move-card depth-{min(card.depth, 3)}"
             body.append(f"<article class=\"{classes}\">")
             body.append(f"<div class=\"mv-label\">{text(card.label)}</div>")
@@ -518,6 +529,27 @@ def _style(columns: int) -> str:
     margin-top: 1.5mm;
   }}
   @media print {{ .print-bar {{ display: none; }} }}
+  /* On-screen the page is not paginated, so the print-tile heights leave
+     either too much empty space (wide screens) or clip the SVG (narrow ones).
+     Drop the fixed card height, mimic an A4 paper for context, and collapse
+     to one column on phones so boards stay legible. */
+  @media screen {{
+    html {{ background: #e8e9ed; min-height: 100vh; }}
+    body {{
+      background: #fff;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      margin: 24px auto;
+      max-width: 186mm;
+      padding: 12mm;
+    }}
+    .move-card {{ height: auto; overflow: visible; }}
+    .move-card svg {{ max-width: 100%; }}
+  }}
+  @media screen and (max-width: 720px) {{
+    body {{ box-shadow: none; margin: 0; max-width: none; padding: 12px 14px 32px; }}
+    .move-grid {{ grid-template-columns: 1fr; }}
+    .move-card {{ max-width: 360px; margin-inline: auto; }}
+  }}
 </style>"""
 
 
@@ -583,6 +615,7 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
     body.append("<html lang=\"en\">")
     body.append("<head>")
     body.append("<meta charset=\"utf-8\">")
+    body.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
     body.append(f"<title>{text(result.title)}</title>")
     body.append(_book_style())
     body.append("</head>")
@@ -720,6 +753,24 @@ def _book_style() -> str:
   .bd-label { font-size: 13px; font-weight: 700; margin-bottom: 1.5mm; }
   .bd-comment { color: #3a4754; font-size: 11px; line-height: 1.5; }
   @media print { .print-bar { display: none; } }
+  /* See the study layout for why this exists: simulate a paper sheet on
+     screen so the print-tuned mm sizes don't render against a raw browser
+     viewport, and collapse the diagram row to a stack on phones. */
+  @media screen {
+    html { background: #e8e9ed; min-height: 100vh; }
+    body {
+      background: #fff;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      margin: 24px auto;
+      max-width: 186mm;
+      padding: 16mm 18mm;
+    }
+  }
+  @media screen and (max-width: 720px) {
+    body { box-shadow: none; margin: 0; max-width: none; padding: 14px 16px 32px; }
+    .book-diagram { flex-direction: column; gap: 3mm; }
+    .bd-board { flex: 0 0 auto; max-width: 280px; width: 100%; }
+  }
 </style>"""
 
 
@@ -730,6 +781,7 @@ def render_game_html(result: StudyResult, options: StudyOptions) -> str:
     body.append("<html lang=\"en\">")
     body.append("<head>")
     body.append("<meta charset=\"utf-8\">")
+    body.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
     body.append(f"<title>{text(result.title)}</title>")
     body.append(_game_style())
     body.append("</head>")
@@ -829,6 +881,25 @@ def _game_style() -> str:
   .dg-label {{ font-size: 12px; font-weight: 700; margin-bottom: 1mm; }}
   .diagram svg {{ display: block; height: auto; margin: 0 auto; width: 100%; }}
   @media print {{ .print-bar {{ display: none; }} }}
+  /* See the study layout: the print 2x4 grid uses fixed mm tile sizes that
+     waste space (or clip) when rendered against a browser viewport instead
+     of an A4 page. Wrap the body in a paper sheet on screen, stack on phones. */
+  @media screen {{
+    html {{ background: #e8e9ed; min-height: 100vh; }}
+    body {{
+      background: #fff;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      margin: 24px auto;
+      max-width: 186mm;
+      padding: 12mm;
+    }}
+    .diagram {{ height: auto; overflow: visible; }}
+  }}
+  @media screen and (max-width: 720px) {{
+    body {{ box-shadow: none; margin: 0; max-width: none; padding: 12px 14px 32px; }}
+    .diagram-grid {{ grid-template-columns: minmax(0, 320px); gap: 4mm; }}
+    .diagram {{ width: 100%; }}
+  }}
 </style>"""
 
 
@@ -858,6 +929,7 @@ def study_options_from_request(source: dict) -> StudyOptions:
         layout=layout,
         book_max_run=max(1, as_int(source.get("maxMovesWithoutDiagram"), 6)),
         chapter_indices=parse_chapter_selection(source.get("chapters")),
+        skip_uncommented=as_bool(source.get("skipUncommented")),
     )
 
 
