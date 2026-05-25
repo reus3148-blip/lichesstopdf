@@ -683,17 +683,31 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
         if chapter.intro:
             body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
-        # Each diagram is its own block: the chapter body is already a
-        # 2-column newspaper flow at the CSS level, so the boards naturally
-        # tile without any pairing logic here.
+        # Lay the body out as a CSS Grid of 3 rows × 2 columns of fixed-size
+        # cells. Each cell is "preceding SAN run + diagram + caption" bundled
+        # together, so a column never starts with a stray SAN run that
+        # pushes the boards in that column down out of alignment with the
+        # boards in the other column. A diagram with a long comment is
+        # marked `tall` so it claims two grid rows; that row carries one
+        # diagram instead of two but the rest of the page stays aligned.
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
+        pending_runs: list[str] = []
         for block in blocks:
             if block.kind == "run":
-                body.append(f"<p class=\"book-run\">{format_san_run_html(block.cards)}</p>")
+                pending_runs.append(format_san_run_html(block.cards))
                 continue
             card = block.card
             depth_class = f"depth-{min(card.depth, 3)}"
-            body.append(f"<figure class=\"book-diagram {depth_class}\">")
+            cell_classes = ["diagram-cell", depth_class]
+            # Heuristic: comments longer than ~80 chars stop fitting in the
+            # caption strip below a 55mm board, so the cell needs to grow.
+            if card.comment and len(card.comment) > 80:
+                cell_classes.append("tall")
+            body.append(f"<div class=\"{' '.join(cell_classes)}\">")
+            for run_html in pending_runs:
+                body.append(f"<p class=\"preceding-run\">{run_html}</p>")
+            pending_runs = []
+            body.append("<figure class=\"book-diagram\">")
             body.append(f"<div class=\"bd-board\">{card.svg}</div>")
             body.append("<figcaption class=\"bd-caption\">")
             body.append(f"<span class=\"bd-label\">{text(card.label)}</span>")
@@ -701,6 +715,15 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
                 body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
             body.append("</figcaption>")
             body.append("</figure>")
+            body.append("</div>")
+
+        # Anything still pending is a trailing SAN run after the last
+        # diagram; it spans both grid columns at the bottom of the chapter.
+        if pending_runs:
+            body.append("<div class=\"trailing-runs\">")
+            for run_html in pending_runs:
+                body.append(f"<p class=\"book-run\">{run_html}</p>")
+            body.append("</div>")
         body.append("</div>")
         body.append("</section>")
 
@@ -727,14 +750,15 @@ def _book_style() -> str:
     /* Hyphenation lets the justified prose break cleanly in narrow columns. */
     hyphens: auto;
   }
-  /* Each chapter body has its OWN 2-column flow. This way the chapter
-     heading sits in normal block flow above its body (no `column-span: all`
-     gymnastics), so `break-after: avoid` actually keeps the title with its
-     content and chromium pushes them together to the next page when needed. */
+  /* The chapter body is a CSS Grid of 3 rows × 2 columns of fixed-size
+     cells. Six diagrams per page is the target; long-comment cells claim
+     two rows (so that page renders five diagrams) but the grid rows keep
+     the boards in both columns at the exact same y-coordinates. */
   .chapter-body {
-    column-count: 2;
-    column-fill: balance;
-    column-gap: 7mm;
+    display: grid;
+    gap: 4mm 7mm;
+    grid-auto-rows: 78mm;
+    grid-template-columns: 1fr 1fr;
   }
   a { color: #1f4f8f; text-decoration: none; }
   .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
@@ -804,6 +828,7 @@ def _book_style() -> str:
   .chapter-intro {
     color: #15181b;
     font-size: 11px;
+    grid-column: 1 / -1;
     line-height: 1.55;
     margin: 0 0 3mm;
     text-align: justify;
@@ -830,24 +855,40 @@ def _book_style() -> str:
     font-weight: 700;
     white-space: nowrap;
   }
-  /* Every diagram block uses the same board width and the same total
-     height so boards in the left and right columns line up vertically
-     across the page. Variations stay visually distinct via italic
-     captions instead of a different board size. */
-  .book-diagram {
+  /* A diagram-cell fills one (or, when `tall`, two) grid row(s). It
+     stacks: optional preceding SAN runs → board → caption. */
+  .diagram-cell {
+    align-items: center;
     break-inside: avoid;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+  }
+  .diagram-cell.tall { grid-row: span 2; }
+  .preceding-run {
+    color: #15181b;
+    font-size: 10px;
+    hyphens: none;
+    line-height: 1.35;
+    margin: 0 0 1mm;
+    text-align: justify;
+    width: 100%;
+  }
+  .preceding-run .mn { font-weight: 700; white-space: nowrap; }
+  .book-diagram {
     align-items: center;
-    height: 80mm;
-    margin: 3mm 0 4mm;
+    break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
     text-align: center;
+    width: 100%;
   }
   .bd-board {
     display: block;
     flex: 0 0 auto;
     max-width: 100%;
-    width: 60mm;
+    width: 55mm;
   }
   .bd-board svg { display: block; height: auto; width: 100%; }
   .bd-caption {
@@ -866,23 +907,37 @@ def _book_style() -> str:
     font-weight: 600;
     letter-spacing: 0.02em;
     margin-bottom: 0.5mm;
+    text-align: center;
   }
   .bd-comment {
     color: #15181b;
     display: block;
-    font-size: 10.5px;
+    font-size: 10px;
     hyphens: none;
-    line-height: 1.45;
+    line-height: 1.4;
     /* Justify in a narrow column produces ugly word gaps; left-align reads
        cleaner and matches how chess books typeset diagram captions. */
     text-align: left;
   }
-  .book-diagram.depth-1 .bd-comment,
-  .book-diagram.depth-2 .bd-comment,
-  .book-diagram.depth-3 .bd-comment {
+  /* Tall cells (long comments) get the extra vertical room and lean the
+     caption a touch larger and left-aligned for readable body copy. */
+  .diagram-cell.tall .bd-comment { font-size: 10.5px; line-height: 1.5; }
+  .diagram-cell.depth-1 .bd-comment,
+  .diagram-cell.depth-2 .bd-comment,
+  .diagram-cell.depth-3 .bd-comment {
     color: #2a2e33;
-    font-size: 10px;
     font-style: italic;
+  }
+  /* Trailing SAN runs (after the last diagram in a chapter) span both
+     grid columns so the moves don't end with awkward whitespace. */
+  .trailing-runs {
+    grid-column: 1 / -1;
+  }
+  .trailing-runs .book-run {
+    font-size: 10.5px;
+    margin: 0 0 2mm;
+    text-align: justify;
+    text-indent: 5mm;
   }
   @media print { .print-bar { display: none; } }
   /* See the study layout for why this exists: simulate a paper sheet on
@@ -898,8 +953,8 @@ def _book_style() -> str:
       padding: 14mm 16mm 16mm;
     }
   }
-  /* Newspaper columns add too much eye-jumping on a phone, where each
-     column would only be ~150px wide. Fall back to a single column. */
+  /* On phones a 2-cell grid would shrink each board too far, so fall back
+     to a single-column flow with auto-height cells. */
   @media screen and (max-width: 720px) {
     body {
       box-shadow: none;
@@ -907,8 +962,11 @@ def _book_style() -> str:
       max-width: none;
       padding: 16px 18px 32px;
     }
-    .chapter-body { column-count: 1; }
-    .book-diagram { height: auto; }
+    .chapter-body {
+      grid-auto-rows: auto;
+      grid-template-columns: 1fr;
+    }
+    .diagram-cell.tall { grid-row: span 1; }
     .bd-board { max-width: 280px; width: 70%; }
   }
 </style>"""
