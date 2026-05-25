@@ -699,9 +699,11 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
             card = block.card
             depth_class = f"depth-{min(card.depth, 3)}"
             cell_classes = ["diagram-cell", depth_class]
-            # Heuristic: comments longer than ~80 chars stop fitting in the
-            # caption strip below a 55mm board, so the cell needs to grow.
-            if card.comment and len(card.comment) > 80:
+            # Heuristic: comments longer than ~60 chars don't read well
+            # squeezed below a 55mm board. Mark them `tall` so the cell
+            # spans both columns and the comment can flow horizontally
+            # alongside the board.
+            if card.comment and len(card.comment) > 60:
                 cell_classes.append("tall")
             body.append(f"<div class=\"{' '.join(cell_classes)}\">")
             for run_html in pending_runs:
@@ -855,8 +857,10 @@ def _book_style() -> str:
     font-weight: 700;
     white-space: nowrap;
   }
-  /* A diagram-cell fills one (or, when `tall`, two) grid row(s). It
-     stacks: optional preceding SAN runs → board → caption. */
+  /* A diagram-cell fills one grid slot by default. When marked `tall`
+     (long comment), it spans both columns of a row instead: board on the
+     left, caption on the right, so a single grid row carries the
+     diagram and its long description side-by-side. */
   .diagram-cell {
     align-items: center;
     break-inside: avoid;
@@ -864,7 +868,10 @@ def _book_style() -> str:
     flex-direction: column;
     overflow: hidden;
   }
-  .diagram-cell.tall { grid-row: span 2; }
+  .diagram-cell.tall {
+    align-items: stretch;
+    grid-column: span 2;
+  }
   .preceding-run {
     color: #15181b;
     font-size: 10px;
@@ -919,9 +926,27 @@ def _book_style() -> str:
        cleaner and matches how chess books typeset diagram captions. */
     text-align: left;
   }
-  /* Tall cells (long comments) get the extra vertical room and lean the
-     caption a touch larger and left-aligned for readable body copy. */
-  .diagram-cell.tall .bd-comment { font-size: 10.5px; line-height: 1.5; }
+  /* Tall cells flow board + caption side-by-side instead of stacked,
+     so the long comment gets the full horizontal room of two columns
+     and the row still fits in one grid-row height. */
+  .diagram-cell.tall .book-diagram {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 6mm;
+    text-align: left;
+  }
+  .diagram-cell.tall .bd-board { flex: 0 0 55mm; }
+  .diagram-cell.tall .bd-caption {
+    flex: 1 1 auto;
+    margin-top: 0;
+    text-align: left;
+  }
+  .diagram-cell.tall .bd-label { text-align: left; }
+  .diagram-cell.tall .bd-comment {
+    font-size: 10.5px;
+    line-height: 1.5;
+    text-align: left;
+  }
   .diagram-cell.depth-1 .bd-comment,
   .diagram-cell.depth-2 .bd-comment,
   .diagram-cell.depth-3 .bd-comment {
