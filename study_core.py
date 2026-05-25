@@ -677,34 +677,24 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
         if chapter.intro:
             body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
+        # Each diagram is its own block: the page is already a 2-column
+        # newspaper flow at the CSS level, so the boards naturally tile
+        # without any pairing logic here.
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
-        i = 0
-        while i < len(blocks):
-            block = blocks[i]
+        for block in blocks:
             if block.kind == "run":
                 body.append(f"<p class=\"book-run\">{format_san_run_html(block.cards)}</p>")
-                i += 1
                 continue
-
-            # Pack consecutive diagrams into a single grid so a page can fit
-            # two boards per row instead of one centred diagram per row.
-            group: list[MoveCard] = []
-            while i < len(blocks) and blocks[i].kind == "diagram":
-                group.append(blocks[i].card)
-                i += 1
-            cols_class = "cols-1" if len(group) == 1 else "cols-2"
-            body.append(f"<div class=\"book-diagrams {cols_class}\">")
-            for card in group:
-                depth_class = f"depth-{min(card.depth, 3)}"
-                body.append(f"<figure class=\"book-diagram {depth_class}\">")
-                body.append(f"<div class=\"bd-board\">{card.svg}</div>")
-                body.append("<figcaption class=\"bd-caption\">")
-                body.append(f"<span class=\"bd-label\">{text(card.label)}</span>")
-                if card.comment:
-                    body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
-                body.append("</figcaption>")
-                body.append("</figure>")
-            body.append("</div>")
+            card = block.card
+            depth_class = f"depth-{min(card.depth, 3)}"
+            body.append(f"<figure class=\"book-diagram {depth_class}\">")
+            body.append(f"<div class=\"bd-board\">{card.svg}</div>")
+            body.append("<figcaption class=\"bd-caption\">")
+            body.append(f"<span class=\"bd-label\">{text(card.label)}</span>")
+            if card.comment:
+                body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
+            body.append("</figcaption>")
+            body.append("</figure>")
         body.append("</section>")
 
     body.append("</body>")
@@ -713,19 +703,25 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
 
 
 def _book_style() -> str:
-    # Tuned for a classic chess-book feel: a single justified column of
-    # serif prose, centred diagrams with an italic caption sitting beneath
-    # the board, and bold move numbers so the eye finds move pairs quickly.
+    # Tuned for a classic chess-book feel: justified serif prose flowing in
+    # two newspaper columns, centred diagrams that sit inside a column with
+    # an italic caption beneath, bold move numbers so the eye finds move
+    # pairs quickly, and chapter headings that span both columns.
     return """<style>
-  @page { size: A4; margin: 16mm 20mm 18mm; }
+  @page { size: A4; margin: 14mm 16mm 16mm; }
   * { box-sizing: border-box; }
   body {
     color: #15181b;
+    column-count: 2;
+    column-fill: balance;
+    column-gap: 7mm;
     font-family: "Georgia", "Source Serif Pro", "Times New Roman", serif;
-    font-size: 11.5px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.55;
     margin: 0;
-    max-width: 170mm;
+    max-width: 178mm;
+    /* Hyphenation lets the justified prose break cleanly in narrow columns. */
+    hyphens: auto;
   }
   a { color: #1f4f8f; text-decoration: none; }
   .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
@@ -739,8 +735,11 @@ def _book_style() -> str:
     font-weight: 700;
     padding: 8px 14px;
   }
+  /* The book title and chapter heads span both newspaper columns so the
+     reader sees the full-width title before the prose splits in two. */
   .book-head {
-    margin-bottom: 7mm;
+    column-span: all;
+    margin-bottom: 6mm;
     padding-bottom: 3mm;
     text-align: center;
   }
@@ -765,14 +764,15 @@ def _book_style() -> str:
     font-style: italic;
     margin-top: 1.5mm;
   }
-  .book-section { margin-top: 7mm; }
-  .book-section:first-of-type { margin-top: 0; }
-  .book-section.page-start { break-before: page; margin-top: 0; }
+  .book-section.page-start { break-before: page; }
   .chapter-head {
     break-after: avoid;
-    margin-bottom: 4mm;
+    column-span: all;
+    margin: 6mm 0 4mm;
     text-align: center;
   }
+  .book-section:first-of-type > .chapter-head { margin-top: 0; }
+  .book-section.page-start > .chapter-head { margin-top: 0; }
   .chapter-title {
     font-family: "Georgia", "Source Serif Pro", serif;
     font-size: 15px;
@@ -788,9 +788,9 @@ def _book_style() -> str:
   }
   .chapter-intro {
     color: #15181b;
-    font-size: 11.5px;
-    line-height: 1.6;
-    margin: 0 0 4mm;
+    font-size: 11px;
+    line-height: 1.55;
+    margin: 0 0 3mm;
     text-align: justify;
   }
   /* SAN runs read as justified book prose. Bold move numbers (via .mn)
@@ -798,11 +798,11 @@ def _book_style() -> str:
      monospaced font, which would clash with the serif body. */
   .book-run {
     font-family: inherit;
-    font-size: 11.5px;
+    font-size: 11px;
     hyphens: none;
     margin: 0 0 2mm;
     text-align: justify;
-    text-indent: 5mm;
+    text-indent: 4mm;
   }
   .book-run + .book-run { margin-top: -0.5mm; }
   .book-run .mn {
@@ -810,58 +810,49 @@ def _book_style() -> str:
     font-weight: 700;
     white-space: nowrap;
   }
-  /* Diagrams pack into a 1- or 2-column grid (the render decides per group)
-     so consecutive boards tile two-up instead of taking a full row each.
-     Variations stay smaller so the hierarchy reads without grey shading. */
-  .book-diagrams {
-    display: grid;
-    gap: 4mm 8mm;
-    margin: 4mm 0 5mm;
-  }
-  .book-diagrams.cols-1 { grid-template-columns: 1fr; justify-items: center; }
-  .book-diagrams.cols-2 { grid-template-columns: 1fr 1fr; }
+  /* Each diagram is a free-flowing figure inside the newspaper column.
+     They fill the column width by default; variations are slightly smaller
+     so the visual hierarchy stays without needing background shading. */
   .book-diagram {
     break-inside: avoid;
     display: block;
-    margin: 0;
+    margin: 3mm 0 4mm;
     text-align: center;
   }
   .bd-board {
     display: inline-block;
-    width: 58mm;
+    max-width: 100%;
+    width: 64mm;
   }
-  .cols-2 .bd-board { width: 100%; max-width: 68mm; }
   .bd-board svg { display: block; height: auto; width: 100%; }
   .book-diagram.depth-1 .bd-board,
   .book-diagram.depth-2 .bd-board,
-  .book-diagram.depth-3 .bd-board { width: 48mm; }
-  .cols-2 .book-diagram.depth-1 .bd-board,
-  .cols-2 .book-diagram.depth-2 .bd-board,
-  .cols-2 .book-diagram.depth-3 .bd-board { max-width: 56mm; }
+  .book-diagram.depth-3 .bd-board { width: 50mm; }
   .bd-caption {
     display: block;
     margin: 1.5mm auto 0;
-    max-width: 130mm;
+    max-width: 100%;
   }
   .bd-label {
     color: #2a2e33;
     display: block;
-    font-size: 10.5px;
+    font-size: 10px;
     font-style: italic;
     letter-spacing: 0.02em;
-    margin-bottom: 0.6mm;
+    margin-bottom: 0.5mm;
   }
   .bd-comment {
     color: #15181b;
     display: block;
-    font-size: 11px;
-    line-height: 1.5;
+    font-size: 10.5px;
+    line-height: 1.45;
+    text-align: justify;
   }
   .book-diagram.depth-1 .bd-comment,
   .book-diagram.depth-2 .bd-comment,
   .book-diagram.depth-3 .bd-comment {
     color: #2a2e33;
-    font-size: 10.5px;
+    font-size: 10px;
     font-style: italic;
   }
   @media print { .print-bar { display: none; } }
@@ -875,13 +866,20 @@ def _book_style() -> str:
       box-shadow: 0 8px 32px rgba(0,0,0,0.08);
       margin: 24px auto;
       max-width: 210mm;
-      padding: 16mm 20mm 18mm;
+      padding: 14mm 16mm 16mm;
     }
   }
+  /* Newspaper columns add too much eye-jumping on a phone, where each
+     column would only be ~150px wide. Fall back to a single column. */
   @media screen and (max-width: 720px) {
-    body { box-shadow: none; margin: 0; max-width: none; padding: 16px 18px 32px; }
-    .book-diagrams.cols-2 { grid-template-columns: 1fr; }
-    .bd-board, .cols-2 .bd-board { max-width: 280px; width: 70%; }
+    body {
+      box-shadow: none;
+      column-count: 1;
+      margin: 0;
+      max-width: none;
+      padding: 16px 18px 32px;
+    }
+    .bd-board { max-width: 280px; width: 70%; }
   }
 </style>"""
 
