@@ -664,6 +664,11 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
         if options.page_break_per_chapter and index > 0:
             classes.append("page-start")
         body.append(f"<section class=\"{' '.join(classes)}\">")
+
+        # Each chapter is its own block with a full-width heading and an
+        # independent 2-column body. Putting the multi-column container on
+        # the chapter (not the body) keeps the heading and its content
+        # together naturally and avoids the `column-span: all` orphan trap.
         body.append("<div class=\"chapter-head\">")
         body.append(f"<div class=\"chapter-title\">{text(chapter.title)}</div>")
         meta_line = chapter.meta
@@ -674,12 +679,13 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
             body.append(f"<div class=\"chapter-meta\">{meta_line}</div>")
         body.append("</div>")
 
+        body.append("<div class=\"chapter-body\">")
         if chapter.intro:
             body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
-        # Each diagram is its own block: the page is already a 2-column
-        # newspaper flow at the CSS level, so the boards naturally tile
-        # without any pairing logic here.
+        # Each diagram is its own block: the chapter body is already a
+        # 2-column newspaper flow at the CSS level, so the boards naturally
+        # tile without any pairing logic here.
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
         for block in blocks:
             if block.kind == "run":
@@ -695,6 +701,7 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
                 body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
             body.append("</figcaption>")
             body.append("</figure>")
+        body.append("</div>")
         body.append("</section>")
 
     body.append("</body>")
@@ -712,9 +719,6 @@ def _book_style() -> str:
   * { box-sizing: border-box; }
   body {
     color: #15181b;
-    column-count: 2;
-    column-fill: balance;
-    column-gap: 7mm;
     font-family: "Georgia", "Source Serif Pro", "Times New Roman", serif;
     font-size: 11px;
     line-height: 1.55;
@@ -722,6 +726,15 @@ def _book_style() -> str:
     max-width: 178mm;
     /* Hyphenation lets the justified prose break cleanly in narrow columns. */
     hyphens: auto;
+  }
+  /* Each chapter body has its OWN 2-column flow. This way the chapter
+     heading sits in normal block flow above its body (no `column-span: all`
+     gymnastics), so `break-after: avoid` actually keeps the title with its
+     content and chromium pushes them together to the next page when needed. */
+  .chapter-body {
+    column-count: 2;
+    column-fill: balance;
+    column-gap: 7mm;
   }
   a { color: #1f4f8f; text-decoration: none; }
   .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
@@ -735,10 +748,8 @@ def _book_style() -> str:
     font-weight: 700;
     padding: 8px 14px;
   }
-  /* The book title and chapter heads span both newspaper columns so the
-     reader sees the full-width title before the prose splits in two. */
+  /* The book title sits above any chapter so it's already full width. */
   .book-head {
-    column-span: all;
     margin-bottom: 6mm;
     padding-bottom: 3mm;
     text-align: center;
@@ -764,15 +775,19 @@ def _book_style() -> str:
     font-style: italic;
     margin-top: 1.5mm;
   }
-  .book-section.page-start { break-before: page; }
+  /* In the book layout every chapter starts on a new page. We tried packing
+     chapters continuously (honoring the `pageBreakPerChapter: false` toggle)
+     but column-flow + `column-span: all` + padding hacks all failed to
+     stop chromium from stranding a chapter title at the bottom of a page
+     with one line of content under it. A clean per-chapter page break is
+     the only reliable way to keep the layout pretty. */
+  .book-section + .book-section { break-before: page; }
   .chapter-head {
     break-after: avoid;
-    column-span: all;
-    margin: 6mm 0 4mm;
+    break-inside: avoid;
+    margin: 0 0 4mm;
     text-align: center;
   }
-  .book-section:first-of-type > .chapter-head { margin-top: 0; }
-  .book-section.page-start > .chapter-head { margin-top: 0; }
   .chapter-title {
     font-family: "Georgia", "Source Serif Pro", serif;
     font-size: 15px;
@@ -804,40 +819,51 @@ def _book_style() -> str:
     text-align: justify;
     text-indent: 4mm;
   }
-  .book-run + .book-run { margin-top: -0.5mm; }
+  /* First paragraph after a heading or diagram follows book convention and
+     drops the indent. */
+  .chapter-intro + .book-run,
+  .chapter-body > .book-run:first-child,
+  .book-diagram + .book-run { text-indent: 0; }
+  .book-run + .book-run { margin-top: -0.5mm; text-indent: 4mm; }
   .book-run .mn {
     font-feature-settings: "lnum" 1;
     font-weight: 700;
     white-space: nowrap;
   }
-  /* Each diagram is a free-flowing figure inside the newspaper column.
-     They fill the column width by default; variations are slightly smaller
-     so the visual hierarchy stays without needing background shading. */
+  /* Every diagram block uses the same board width and the same total
+     height so boards in the left and right columns line up vertically
+     across the page. Variations stay visually distinct via italic
+     captions instead of a different board size. */
   .book-diagram {
     break-inside: avoid;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 80mm;
     margin: 3mm 0 4mm;
     text-align: center;
   }
   .bd-board {
-    display: inline-block;
+    display: block;
+    flex: 0 0 auto;
     max-width: 100%;
-    width: 64mm;
+    width: 60mm;
   }
   .bd-board svg { display: block; height: auto; width: 100%; }
-  .book-diagram.depth-1 .bd-board,
-  .book-diagram.depth-2 .bd-board,
-  .book-diagram.depth-3 .bd-board { width: 50mm; }
   .bd-caption {
     display: block;
-    margin: 1.5mm auto 0;
+    flex: 1 1 auto;
+    margin: 1.5mm 0 0;
     max-width: 100%;
+    overflow: hidden;
+    width: 100%;
   }
   .bd-label {
-    color: #2a2e33;
+    color: #15181b;
     display: block;
     font-size: 10px;
     font-style: italic;
+    font-weight: 600;
     letter-spacing: 0.02em;
     margin-bottom: 0.5mm;
   }
@@ -845,8 +871,11 @@ def _book_style() -> str:
     color: #15181b;
     display: block;
     font-size: 10.5px;
+    hyphens: none;
     line-height: 1.45;
-    text-align: justify;
+    /* Justify in a narrow column produces ugly word gaps; left-align reads
+       cleaner and matches how chess books typeset diagram captions. */
+    text-align: left;
   }
   .book-diagram.depth-1 .bd-comment,
   .book-diagram.depth-2 .bd-comment,
@@ -874,11 +903,12 @@ def _book_style() -> str:
   @media screen and (max-width: 720px) {
     body {
       box-shadow: none;
-      column-count: 1;
       margin: 0;
       max-width: none;
       padding: 16px 18px 32px;
     }
+    .chapter-body { column-count: 1; }
+    .book-diagram { height: auto; }
     .bd-board { max-width: 280px; width: 70%; }
   }
 </style>"""
