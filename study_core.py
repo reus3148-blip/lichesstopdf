@@ -679,17 +679,19 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
             body.append(f"<div class=\"chapter-meta\">{meta_line}</div>")
         body.append("</div>")
 
-        body.append("<div class=\"chapter-body\">")
+        # Chapter intro is full-width prose; render it *before* the grid so
+        # it doesn't reserve a whole 78mm grid row for one or two lines.
         if chapter.intro:
             body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
-        # Lay the body out as a CSS Grid of 3 rows × 2 columns of fixed-size
-        # cells. Each cell is "preceding SAN run + diagram + caption" bundled
-        # together, so a column never starts with a stray SAN run that
-        # pushes the boards in that column down out of alignment with the
-        # boards in the other column. A diagram with a long comment is
-        # marked `tall` so it claims two grid rows; that row carries one
-        # diagram instead of two but the rest of the page stays aligned.
+        body.append("<div class=\"chapter-body\">")
+        # Lay the body out as a CSS Grid of 2 columns. Each cell bundles
+        # "preceding SAN run + diagram + caption" so a column never starts
+        # with a stray SAN run that pushes its boards down out of alignment
+        # with the other column. Rows use `minmax(78mm, auto)` so a row
+        # with a long caption can grow without pushing the next row out of
+        # rhythm — both cells in a row share the row's height, so the
+        # boards in that row stay top-aligned with each other.
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
         pending_runs: list[str] = []
         for block in blocks:
@@ -699,12 +701,6 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
             card = block.card
             depth_class = f"depth-{min(card.depth, 3)}"
             cell_classes = ["diagram-cell", depth_class]
-            # Heuristic: comments longer than ~60 chars don't read well
-            # squeezed below a 55mm board. Mark them `tall` so the cell
-            # spans both columns and the comment can flow horizontally
-            # alongside the board.
-            if card.comment and len(card.comment) > 60:
-                cell_classes.append("tall")
             body.append(f"<div class=\"{' '.join(cell_classes)}\">")
             for run_html in pending_runs:
                 body.append(f"<p class=\"preceding-run\">{run_html}</p>")
@@ -752,14 +748,15 @@ def _book_style() -> str:
     /* Hyphenation lets the justified prose break cleanly in narrow columns. */
     hyphens: auto;
   }
-  /* The chapter body is a CSS Grid of 3 rows × 2 columns of fixed-size
-     cells. Six diagrams per page is the target; long-comment cells claim
-     two rows (so that page renders five diagrams) but the grid rows keep
-     the boards in both columns at the exact same y-coordinates. */
+  /* The chapter body is a CSS Grid of 2 columns. Rows use minmax so a
+     short cell uses the 78mm "standard" (six boards per page) but a long
+     comment can stretch its row downward. Both cells in a row share the
+     row's height, so the left and right boards in any row stay
+     top-aligned with each other; subsequent rows reset to 78mm. */
   .chapter-body {
     display: grid;
     gap: 4mm 7mm;
-    grid-auto-rows: 78mm;
+    grid-auto-rows: minmax(78mm, auto);
     grid-template-columns: 1fr 1fr;
   }
   a { color: #1f4f8f; text-decoration: none; }
@@ -830,9 +827,8 @@ def _book_style() -> str:
   .chapter-intro {
     color: #15181b;
     font-size: 11px;
-    grid-column: 1 / -1;
     line-height: 1.55;
-    margin: 0 0 3mm;
+    margin: 0 0 4mm;
     text-align: justify;
   }
   /* SAN runs read as justified book prose. Bold move numbers (via .mn)
@@ -857,20 +853,15 @@ def _book_style() -> str:
     font-weight: 700;
     white-space: nowrap;
   }
-  /* A diagram-cell fills one grid slot by default. When marked `tall`
-     (long comment), it spans both columns of a row instead: board on the
-     left, caption on the right, so a single grid row carries the
-     diagram and its long description side-by-side. */
+  /* A diagram-cell fills one grid slot. Its height is the row's height
+     (78mm minimum, growing if the caption is long). `overflow: hidden`
+     would clip long comments, so we deliberately leave it visible — the
+     row simply gets taller for that row only. */
   .diagram-cell {
     align-items: center;
     break-inside: avoid;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-  }
-  .diagram-cell.tall {
-    align-items: stretch;
-    grid-column: span 2;
   }
   .preceding-run {
     color: #15181b;
@@ -926,27 +917,6 @@ def _book_style() -> str:
        cleaner and matches how chess books typeset diagram captions. */
     text-align: left;
   }
-  /* Tall cells flow board + caption side-by-side instead of stacked,
-     so the long comment gets the full horizontal room of two columns
-     and the row still fits in one grid-row height. */
-  .diagram-cell.tall .book-diagram {
-    align-items: flex-start;
-    flex-direction: row;
-    gap: 6mm;
-    text-align: left;
-  }
-  .diagram-cell.tall .bd-board { flex: 0 0 55mm; }
-  .diagram-cell.tall .bd-caption {
-    flex: 1 1 auto;
-    margin-top: 0;
-    text-align: left;
-  }
-  .diagram-cell.tall .bd-label { text-align: left; }
-  .diagram-cell.tall .bd-comment {
-    font-size: 10.5px;
-    line-height: 1.5;
-    text-align: left;
-  }
   .diagram-cell.depth-1 .bd-comment,
   .diagram-cell.depth-2 .bd-comment,
   .diagram-cell.depth-3 .bd-comment {
@@ -991,7 +961,6 @@ def _book_style() -> str:
       grid-auto-rows: auto;
       grid-template-columns: 1fr;
     }
-    .diagram-cell.tall { grid-row: span 1; }
     .bd-board { max-width: 280px; width: 70%; }
   }
 </style>"""
