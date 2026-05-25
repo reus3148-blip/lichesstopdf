@@ -608,6 +608,32 @@ def format_san_run(cards: list[MoveCard]) -> str:
     return " ".join(pieces)
 
 
+def format_san_run_html(cards: list[MoveCard]) -> str:
+    """Same as format_san_run but wraps move numbers in <span class="mn">.
+
+    Bolded move numbers visually separate move pairs in dense book prose,
+    matching how printed chess books typeset notation.
+    """
+    pieces: list[str] = []
+    prev_white_number: int | None = None
+    for card in cards:
+        san = text(card.san)
+        if card.is_white_move:
+            pieces.append(
+                f"<span class=\"mn\">{card.fullmove_number}.</span> {san}"
+            )
+            prev_white_number = card.fullmove_number
+        else:
+            if prev_white_number == card.fullmove_number:
+                pieces.append(san)
+            else:
+                pieces.append(
+                    f"<span class=\"mn\">{card.fullmove_number}…</span> {san}"
+                )
+            prev_white_number = None
+    return " ".join(pieces)
+
+
 def render_book_html(result: StudyResult, options: StudyOptions) -> str:
     """Render a study as a book: prose SAN runs with diagrams only where useful."""
     body: list[str] = []
@@ -654,16 +680,16 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
         for block in blocks:
             if block.kind == "run":
-                body.append(f"<p class=\"book-run\">{text(format_san_run(block.cards))}</p>")
+                body.append(f"<p class=\"book-run\">{format_san_run_html(block.cards)}</p>")
             else:
                 card = block.card
                 depth_class = f"depth-{min(card.depth, 3)}"
                 body.append(f"<figure class=\"book-diagram {depth_class}\">")
                 body.append(f"<div class=\"bd-board\">{card.svg}</div>")
-                body.append("<figcaption class=\"bd-text\">")
-                body.append(f"<div class=\"bd-label\">{text(card.label)}</div>")
+                body.append("<figcaption class=\"bd-caption\">")
+                body.append(f"<span class=\"bd-label\">{text(card.label)}</span>")
                 if card.comment:
-                    body.append(f"<div class=\"bd-comment\">{text(card.comment)}</div>")
+                    body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
                 body.append("</figcaption>")
                 body.append("</figure>")
         body.append("</section>")
@@ -674,16 +700,19 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
 
 
 def _book_style() -> str:
+    # Tuned for a classic chess-book feel: a single justified column of
+    # serif prose, centred diagrams with an italic caption sitting beneath
+    # the board, and bold move numbers so the eye finds move pairs quickly.
     return """<style>
-  @page { size: A4; margin: 16mm 18mm; }
+  @page { size: A4; margin: 22mm 24mm 24mm; }
   * { box-sizing: border-box; }
   body {
-    color: #1f2933;
-    font-family: "Georgia", "Times New Roman", serif;
-    font-size: 12.5px;
-    line-height: 1.55;
+    color: #15181b;
+    font-family: "Georgia", "Source Serif Pro", "Times New Roman", serif;
+    font-size: 12px;
+    line-height: 1.7;
     margin: 0;
-    max-width: 170mm;
+    max-width: 162mm;
   }
   a { color: #1f4f8f; text-decoration: none; }
   .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
@@ -698,60 +727,118 @@ def _book_style() -> str:
     padding: 8px 14px;
   }
   .book-head {
-    border-bottom: 2px solid #1f2933;
-    margin-bottom: 6mm;
-    padding-bottom: 3mm;
+    margin-bottom: 10mm;
+    padding-bottom: 4mm;
+    text-align: center;
   }
-  .book-title { font-size: 22px; font-weight: 800; font-family: Arial, Helvetica, sans-serif; }
-  .book-sub { color: #52606d; font-size: 11px; margin-top: 1mm; font-family: Arial, Helvetica, sans-serif; }
-  .book-section { margin-top: 8mm; }
+  .book-head::after {
+    background: #15181b;
+    content: "";
+    display: block;
+    height: 1px;
+    margin: 4mm auto 0;
+    width: 30mm;
+  }
+  .book-title {
+    font-family: "Georgia", "Source Serif Pro", serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    line-height: 1.2;
+  }
+  .book-sub {
+    color: #6a6f76;
+    font-size: 10.5px;
+    font-style: italic;
+    margin-top: 2mm;
+  }
+  .book-section { margin-top: 10mm; }
   .book-section:first-of-type { margin-top: 0; }
   .book-section.page-start { break-before: page; margin-top: 0; }
   .chapter-head {
-    border-bottom: 1px solid #c9d2dc;
     break-after: avoid;
-    margin-bottom: 4mm;
-    padding-bottom: 2mm;
-    font-family: Arial, Helvetica, sans-serif;
+    margin-bottom: 6mm;
+    text-align: center;
   }
-  .chapter-title { font-size: 16px; font-weight: 700; }
-  .chapter-meta { color: #52606d; font-size: 10px; margin-top: 1mm; }
+  .chapter-title {
+    font-family: "Georgia", "Source Serif Pro", serif;
+    font-size: 17px;
+    font-variant: small-caps;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .chapter-meta {
+    color: #6a6f76;
+    font-size: 10.5px;
+    font-style: italic;
+    margin-top: 1.5mm;
+  }
   .chapter-intro {
-    color: #3a4754;
+    color: #15181b;
     font-size: 12px;
-    line-height: 1.55;
-    margin: 0 0 5mm;
-  }
-  /* SAN runs read like book prose, slightly indented and in a mono-ish weight. */
-  .book-run {
-    font-family: "Cambria Math", "Georgia", serif;
-    font-size: 12.5px;
-    margin: 0 0 3mm;
-    text-indent: 4mm;
+    line-height: 1.7;
+    margin: 0 0 6mm;
     text-align: justify;
   }
+  /* SAN runs read as justified book prose. Bold move numbers (via .mn)
+     give the eye an anchor for each move pair without resorting to a
+     monospaced font, which would clash with the serif body. */
+  .book-run {
+    font-family: inherit;
+    font-size: 12px;
+    hyphens: none;
+    margin: 0 0 2.5mm;
+    text-align: justify;
+    text-indent: 6mm;
+  }
+  .book-run + .book-run { margin-top: -0.5mm; }
+  .book-run .mn {
+    font-feature-settings: "lnum" 1;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  /* Diagrams sit centred in the column, smaller for variations so the
+     hierarchy reads without needing background shading. */
   .book-diagram {
-    align-items: flex-start;
     break-inside: avoid;
-    display: flex;
-    gap: 5mm;
-    margin: 0 0 5mm;
-    padding: 2mm 2mm 2mm 0;
+    display: block;
+    margin: 5mm auto 6mm;
+    text-align: center;
   }
-  /* Variation depth is shown with a left border and grey shade so it survives
-     mono printing, matching the study layout. */
-  .book-diagram.depth-0 { border-left: 4px solid #1f2933; padding-left: 3mm; }
-  .book-diagram.depth-1 { background: #f2f3f4; border-left: 4px solid #8b95a1; padding-left: 3mm; }
-  .book-diagram.depth-2 { background: #eaebed; border-left: 4px dashed #6b7480; padding-left: 3mm; }
-  .book-diagram.depth-3 { background: #e2e4e7; border-left: 4px dotted #6b7480; padding-left: 3mm; }
-  .bd-board { flex: 0 0 60mm; }
+  .bd-board {
+    display: inline-block;
+    width: 72mm;
+  }
   .bd-board svg { display: block; height: auto; width: 100%; }
-  .bd-text {
-    flex: 1 1 auto;
-    font-family: Arial, Helvetica, sans-serif;
+  .book-diagram.depth-1 .bd-board,
+  .book-diagram.depth-2 .bd-board,
+  .book-diagram.depth-3 .bd-board { width: 58mm; }
+  .bd-caption {
+    display: block;
+    margin: 2.5mm auto 0;
+    max-width: 130mm;
   }
-  .bd-label { font-size: 13px; font-weight: 700; margin-bottom: 1.5mm; }
-  .bd-comment { color: #3a4754; font-size: 11px; line-height: 1.5; }
+  .bd-label {
+    color: #2a2e33;
+    display: block;
+    font-size: 10.5px;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    margin-bottom: 1mm;
+  }
+  .bd-comment {
+    color: #15181b;
+    display: block;
+    font-size: 11.5px;
+    line-height: 1.55;
+  }
+  .book-diagram.depth-1 .bd-comment,
+  .book-diagram.depth-2 .bd-comment,
+  .book-diagram.depth-3 .bd-comment {
+    color: #2a2e33;
+    font-size: 10.5px;
+    font-style: italic;
+  }
   @media print { .print-bar { display: none; } }
   /* See the study layout for why this exists: simulate a paper sheet on
      screen so the print-tuned mm sizes don't render against a raw browser
@@ -762,14 +849,13 @@ def _book_style() -> str:
       background: #fff;
       box-shadow: 0 8px 32px rgba(0,0,0,0.08);
       margin: 24px auto;
-      max-width: 186mm;
-      padding: 16mm 18mm;
+      max-width: 196mm;
+      padding: 22mm 24mm 24mm;
     }
   }
   @media screen and (max-width: 720px) {
-    body { box-shadow: none; margin: 0; max-width: none; padding: 14px 16px 32px; }
-    .book-diagram { flex-direction: column; gap: 3mm; }
-    .bd-board { flex: 0 0 auto; max-width: 280px; width: 100%; }
+    body { box-shadow: none; margin: 0; max-width: none; padding: 16px 18px 32px; }
+    .bd-board { width: 70%; max-width: 280px; }
   }
 </style>"""
 
