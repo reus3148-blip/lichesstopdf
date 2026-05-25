@@ -678,11 +678,23 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
             body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
-        for block in blocks:
+        i = 0
+        while i < len(blocks):
+            block = blocks[i]
             if block.kind == "run":
                 body.append(f"<p class=\"book-run\">{format_san_run_html(block.cards)}</p>")
-            else:
-                card = block.card
+                i += 1
+                continue
+
+            # Pack consecutive diagrams into a single grid so a page can fit
+            # two boards per row instead of one centred diagram per row.
+            group: list[MoveCard] = []
+            while i < len(blocks) and blocks[i].kind == "diagram":
+                group.append(blocks[i].card)
+                i += 1
+            cols_class = "cols-1" if len(group) == 1 else "cols-2"
+            body.append(f"<div class=\"book-diagrams {cols_class}\">")
+            for card in group:
                 depth_class = f"depth-{min(card.depth, 3)}"
                 body.append(f"<figure class=\"book-diagram {depth_class}\">")
                 body.append(f"<div class=\"bd-board\">{card.svg}</div>")
@@ -692,6 +704,7 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
                     body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
                 body.append("</figcaption>")
                 body.append("</figure>")
+            body.append("</div>")
         body.append("</section>")
 
     body.append("</body>")
@@ -704,15 +717,15 @@ def _book_style() -> str:
     # serif prose, centred diagrams with an italic caption sitting beneath
     # the board, and bold move numbers so the eye finds move pairs quickly.
     return """<style>
-  @page { size: A4; margin: 22mm 24mm 24mm; }
+  @page { size: A4; margin: 16mm 20mm 18mm; }
   * { box-sizing: border-box; }
   body {
     color: #15181b;
     font-family: "Georgia", "Source Serif Pro", "Times New Roman", serif;
-    font-size: 12px;
-    line-height: 1.7;
+    font-size: 11.5px;
+    line-height: 1.6;
     margin: 0;
-    max-width: 162mm;
+    max-width: 170mm;
   }
   a { color: #1f4f8f; text-decoration: none; }
   .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
@@ -727,8 +740,8 @@ def _book_style() -> str:
     padding: 8px 14px;
   }
   .book-head {
-    margin-bottom: 10mm;
-    padding-bottom: 4mm;
+    margin-bottom: 7mm;
+    padding-bottom: 3mm;
     text-align: center;
   }
   .book-head::after {
@@ -736,48 +749,48 @@ def _book_style() -> str:
     content: "";
     display: block;
     height: 1px;
-    margin: 4mm auto 0;
-    width: 30mm;
+    margin: 3mm auto 0;
+    width: 26mm;
   }
   .book-title {
     font-family: "Georgia", "Source Serif Pro", serif;
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
     letter-spacing: 0.005em;
     line-height: 1.2;
   }
   .book-sub {
     color: #6a6f76;
-    font-size: 10.5px;
+    font-size: 10px;
     font-style: italic;
-    margin-top: 2mm;
+    margin-top: 1.5mm;
   }
-  .book-section { margin-top: 10mm; }
+  .book-section { margin-top: 7mm; }
   .book-section:first-of-type { margin-top: 0; }
   .book-section.page-start { break-before: page; margin-top: 0; }
   .chapter-head {
     break-after: avoid;
-    margin-bottom: 6mm;
+    margin-bottom: 4mm;
     text-align: center;
   }
   .chapter-title {
     font-family: "Georgia", "Source Serif Pro", serif;
-    font-size: 17px;
+    font-size: 15px;
     font-variant: small-caps;
     font-weight: 700;
     letter-spacing: 0.06em;
   }
   .chapter-meta {
     color: #6a6f76;
-    font-size: 10.5px;
+    font-size: 10px;
     font-style: italic;
-    margin-top: 1.5mm;
+    margin-top: 1mm;
   }
   .chapter-intro {
     color: #15181b;
-    font-size: 12px;
-    line-height: 1.7;
-    margin: 0 0 6mm;
+    font-size: 11.5px;
+    line-height: 1.6;
+    margin: 0 0 4mm;
     text-align: justify;
   }
   /* SAN runs read as justified book prose. Bold move numbers (via .mn)
@@ -785,11 +798,11 @@ def _book_style() -> str:
      monospaced font, which would clash with the serif body. */
   .book-run {
     font-family: inherit;
-    font-size: 12px;
+    font-size: 11.5px;
     hyphens: none;
-    margin: 0 0 2.5mm;
+    margin: 0 0 2mm;
     text-align: justify;
-    text-indent: 6mm;
+    text-indent: 5mm;
   }
   .book-run + .book-run { margin-top: -0.5mm; }
   .book-run .mn {
@@ -797,25 +810,37 @@ def _book_style() -> str:
     font-weight: 700;
     white-space: nowrap;
   }
-  /* Diagrams sit centred in the column, smaller for variations so the
-     hierarchy reads without needing background shading. */
+  /* Diagrams pack into a 1- or 2-column grid (the render decides per group)
+     so consecutive boards tile two-up instead of taking a full row each.
+     Variations stay smaller so the hierarchy reads without grey shading. */
+  .book-diagrams {
+    display: grid;
+    gap: 4mm 8mm;
+    margin: 4mm 0 5mm;
+  }
+  .book-diagrams.cols-1 { grid-template-columns: 1fr; justify-items: center; }
+  .book-diagrams.cols-2 { grid-template-columns: 1fr 1fr; }
   .book-diagram {
     break-inside: avoid;
     display: block;
-    margin: 5mm auto 6mm;
+    margin: 0;
     text-align: center;
   }
   .bd-board {
     display: inline-block;
-    width: 72mm;
+    width: 58mm;
   }
+  .cols-2 .bd-board { width: 100%; max-width: 68mm; }
   .bd-board svg { display: block; height: auto; width: 100%; }
   .book-diagram.depth-1 .bd-board,
   .book-diagram.depth-2 .bd-board,
-  .book-diagram.depth-3 .bd-board { width: 58mm; }
+  .book-diagram.depth-3 .bd-board { width: 48mm; }
+  .cols-2 .book-diagram.depth-1 .bd-board,
+  .cols-2 .book-diagram.depth-2 .bd-board,
+  .cols-2 .book-diagram.depth-3 .bd-board { max-width: 56mm; }
   .bd-caption {
     display: block;
-    margin: 2.5mm auto 0;
+    margin: 1.5mm auto 0;
     max-width: 130mm;
   }
   .bd-label {
@@ -824,13 +849,13 @@ def _book_style() -> str:
     font-size: 10.5px;
     font-style: italic;
     letter-spacing: 0.02em;
-    margin-bottom: 1mm;
+    margin-bottom: 0.6mm;
   }
   .bd-comment {
     color: #15181b;
     display: block;
-    font-size: 11.5px;
-    line-height: 1.55;
+    font-size: 11px;
+    line-height: 1.5;
   }
   .book-diagram.depth-1 .bd-comment,
   .book-diagram.depth-2 .bd-comment,
@@ -849,13 +874,14 @@ def _book_style() -> str:
       background: #fff;
       box-shadow: 0 8px 32px rgba(0,0,0,0.08);
       margin: 24px auto;
-      max-width: 196mm;
-      padding: 22mm 24mm 24mm;
+      max-width: 210mm;
+      padding: 16mm 20mm 18mm;
     }
   }
   @media screen and (max-width: 720px) {
     body { box-shadow: none; margin: 0; max-width: none; padding: 16px 18px 32px; }
-    .bd-board { width: 70%; max-width: 280px; }
+    .book-diagrams.cols-2 { grid-template-columns: 1fr; }
+    .bd-board, .cols-2 .bd-board { max-width: 280px; width: 70%; }
   }
 </style>"""
 
