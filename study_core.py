@@ -679,43 +679,30 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
             body.append(f"<div class=\"chapter-meta\">{meta_line}</div>")
         body.append("</div>")
 
-        # Chapter intro is full-width prose; render it *before* the grid so
-        # it doesn't reserve a whole 78mm grid row for one or two lines.
         if chapter.intro:
             body.append(f"<p class=\"chapter-intro\">{text(chapter.intro)}</p>")
 
-        body.append("<div class=\"chapter-body\">")
-        # Lay the body out as a CSS Grid of 2 columns. Each cell bundles
-        # "preceding SAN run + diagram + caption" so a column never starts
-        # with a stray SAN run that pushes its boards down out of alignment
-        # with the other column. Rows use `minmax(78mm, auto)` so a row
-        # with a long caption can grow without pushing the next row out of
-        # rhythm — both cells in a row share the row's height, so the
-        # boards in that row stay top-aligned with each other.
+        # Single-column book flow: SAN runs read as prose, diagrams sit on
+        # their own row whenever a move carries a comment. The 2-column /
+        # grid experiments produced empty slots and orphaned rows in
+        # comment-heavy studies, so we keep things linear.
         blocks = build_book_blocks(chapter.cards, options.book_max_run)
-        # When the user opted into "skip uncommented", drop every diagram
-        # that carries no comment — including variation diagrams, which
-        # `build_book_blocks` would otherwise always emit because they sit
-        # off the mainline. SAN runs are preserved so the move flow stays
-        # readable.
         if options.skip_uncommented:
+            # When the user opted into "skip uncommented", drop every
+            # diagram without a comment (including variation diagrams,
+            # which `build_book_blocks` would otherwise always emit).
+            # SAN runs are preserved so the move flow stays readable.
             blocks = [
                 block for block in blocks
                 if block.kind == "run" or (block.card and block.card.comment)
             ]
-        pending_runs: list[str] = []
         for block in blocks:
             if block.kind == "run":
-                pending_runs.append(format_san_run_html(block.cards))
+                body.append(f"<p class=\"book-run\">{format_san_run_html(block.cards)}</p>")
                 continue
             card = block.card
             depth_class = f"depth-{min(card.depth, 3)}"
-            cell_classes = ["diagram-cell", depth_class]
-            body.append(f"<div class=\"{' '.join(cell_classes)}\">")
-            for run_html in pending_runs:
-                body.append(f"<p class=\"preceding-run\">{run_html}</p>")
-            pending_runs = []
-            body.append("<figure class=\"book-diagram\">")
+            body.append(f"<figure class=\"book-diagram {depth_class}\">")
             body.append(f"<div class=\"bd-board\">{card.svg}</div>")
             body.append("<figcaption class=\"bd-caption\">")
             body.append(f"<span class=\"bd-label\">{text(card.label)}</span>")
@@ -723,16 +710,6 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
                 body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
             body.append("</figcaption>")
             body.append("</figure>")
-            body.append("</div>")
-
-        # Anything still pending is a trailing SAN run after the last
-        # diagram; it spans both grid columns at the bottom of the chapter.
-        if pending_runs:
-            body.append("<div class=\"trailing-runs\">")
-            for run_html in pending_runs:
-                body.append(f"<p class=\"book-run\">{run_html}</p>")
-            body.append("</div>")
-        body.append("</div>")
         body.append("</section>")
 
     body.append("</body>")
@@ -751,24 +728,13 @@ def _book_style() -> str:
   body {
     color: #15181b;
     font-family: "Georgia", "Source Serif Pro", "Times New Roman", serif;
-    font-size: 11px;
-    line-height: 1.55;
+    font-size: 11.5px;
+    line-height: 1.6;
     margin: 0;
-    max-width: 178mm;
-    /* Hyphenation lets the justified prose break cleanly in narrow columns. */
-    hyphens: auto;
+    max-width: 156mm;
   }
-  /* The chapter body is a CSS Grid of 2 columns. Rows use minmax so a
-     short cell uses the 78mm "standard" (six boards per page) but a long
-     comment can stretch its row downward. Both cells in a row share the
-     row's height, so the left and right boards in any row stay
-     top-aligned with each other; subsequent rows reset to 78mm. */
-  .chapter-body {
-    display: grid;
-    gap: 4mm 7mm;
-    grid-auto-rows: minmax(78mm, auto);
-    grid-template-columns: 1fr 1fr;
-  }
+  /* Single-column flow: SAN run prose, diagrams stacked one per row. */
+  .chapter-body > * + * { margin-top: 4mm; }
   a { color: #1f4f8f; text-decoration: none; }
   .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
   .print-bar button {
@@ -846,49 +812,34 @@ def _book_style() -> str:
      monospaced font, which would clash with the serif body. */
   .book-run {
     font-family: inherit;
-    font-size: 11px;
+    font-size: 11.5px;
     hyphens: none;
-    margin: 0 0 2mm;
+    margin: 0 0 3mm;
     text-align: justify;
-    text-indent: 4mm;
+    text-indent: 5mm;
   }
+  .book-run .mn { font-weight: 700; white-space: nowrap; }
   /* First paragraph after a heading or diagram follows book convention and
      drops the indent. */
   .chapter-intro + .book-run,
   .chapter-body > .book-run:first-child,
   .book-diagram + .book-run { text-indent: 0; }
-  .book-run + .book-run { margin-top: -0.5mm; text-indent: 4mm; }
+  .book-run + .book-run { margin-top: -1mm; text-indent: 5mm; }
   .book-run .mn {
     font-feature-settings: "lnum" 1;
     font-weight: 700;
     white-space: nowrap;
   }
-  /* A diagram-cell fills one grid slot. Its height is the row's height
-     (78mm minimum, growing if the caption is long). `overflow: hidden`
-     would clip long comments, so we deliberately leave it visible — the
-     row simply gets taller for that row only. */
-  .diagram-cell {
-    align-items: center;
-    break-inside: avoid;
-    display: flex;
-    flex-direction: column;
-  }
-  .preceding-run {
-    color: #15181b;
-    font-size: 10px;
-    hyphens: none;
-    line-height: 1.35;
-    margin: 0 0 1mm;
-    text-align: justify;
-    width: 100%;
-  }
-  .preceding-run .mn { font-weight: 700; white-space: nowrap; }
+  /* Each diagram is its own centered figure: board on top, caption below.
+     Board on the left + caption on the right would let comment-heavy
+     studies pack tighter, but the user prefers the single-column "show me
+     the SAN, drop a board where it's worth commenting on" rhythm. */
   .book-diagram {
     align-items: center;
     break-inside: avoid;
     display: flex;
     flex-direction: column;
-    margin: 0;
+    margin: 4mm auto 5mm;
     text-align: center;
     width: 100%;
   }
@@ -896,53 +847,40 @@ def _book_style() -> str:
     display: block;
     flex: 0 0 auto;
     max-width: 100%;
-    width: 55mm;
+    width: 68mm;
   }
   .bd-board svg { display: block; height: auto; width: 100%; }
+  .book-diagram.depth-1 .bd-board,
+  .book-diagram.depth-2 .bd-board,
+  .book-diagram.depth-3 .bd-board { width: 56mm; }
   .bd-caption {
     display: block;
-    flex: 1 1 auto;
-    margin: 1.5mm 0 0;
-    max-width: 100%;
-    overflow: hidden;
-    width: 100%;
+    margin: 2mm auto 0;
+    max-width: 130mm;
   }
   .bd-label {
     color: #15181b;
     display: block;
-    font-size: 10px;
+    font-size: 11px;
     font-style: italic;
     font-weight: 600;
     letter-spacing: 0.02em;
-    margin-bottom: 0.5mm;
+    margin-bottom: 0.8mm;
     text-align: center;
   }
   .bd-comment {
     color: #15181b;
     display: block;
-    font-size: 10px;
+    font-size: 11px;
     hyphens: none;
-    line-height: 1.4;
-    /* Justify in a narrow column produces ugly word gaps; left-align reads
-       cleaner and matches how chess books typeset diagram captions. */
-    text-align: left;
+    line-height: 1.5;
+    text-align: center;
   }
-  .diagram-cell.depth-1 .bd-comment,
-  .diagram-cell.depth-2 .bd-comment,
-  .diagram-cell.depth-3 .bd-comment {
+  .book-diagram.depth-1 .bd-comment,
+  .book-diagram.depth-2 .bd-comment,
+  .book-diagram.depth-3 .bd-comment {
     color: #2a2e33;
     font-style: italic;
-  }
-  /* Trailing SAN runs (after the last diagram in a chapter) span both
-     grid columns so the moves don't end with awkward whitespace. */
-  .trailing-runs {
-    grid-column: 1 / -1;
-  }
-  .trailing-runs .book-run {
-    font-size: 10.5px;
-    margin: 0 0 2mm;
-    text-align: justify;
-    text-indent: 5mm;
   }
   @media print { .print-bar { display: none; } }
   /* See the study layout for why this exists: simulate a paper sheet on
@@ -966,10 +904,6 @@ def _book_style() -> str:
       margin: 0;
       max-width: none;
       padding: 16px 18px 32px;
-    }
-    .chapter-body {
-      grid-auto-rows: auto;
-      grid-template-columns: 1fr;
     }
     .bd-board { max-width: 280px; width: 70%; }
   }
