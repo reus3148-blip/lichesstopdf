@@ -847,12 +847,9 @@ def _book_style() -> str:
     display: block;
     flex: 0 0 auto;
     max-width: 100%;
-    width: 68mm;
+    width: 64mm;
   }
   .bd-board svg { display: block; height: auto; width: 100%; }
-  .book-diagram.depth-1 .bd-board,
-  .book-diagram.depth-2 .bd-board,
-  .book-diagram.depth-3 .bd-board { width: 56mm; }
   .bd-caption {
     display: block;
     margin: 2mm auto 0;
