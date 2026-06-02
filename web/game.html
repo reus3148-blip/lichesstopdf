@@ -138,25 +138,24 @@
 
       .primary {
         background: var(--ac);
-        border: 0;
+        border: 1px solid var(--ac);
         border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(43, 91, 215, 0.18);
         color: #fff;
         cursor: pointer;
         font-size: 15px;
-        font-weight: 600;
-        padding: 12px 18px;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        font-weight: 500;
+        padding: 11px 18px;
+        transition: background 0.15s ease, border-color 0.15s ease;
         width: 100%;
       }
 
       .primary:hover {
-        box-shadow: 0 6px 16px rgba(43, 91, 215, 0.24);
-        transform: translateY(-1px);
+        background: #1f1f1f;
+        border-color: #1f1f1f;
       }
 
       .primary:active {
-        transform: translateY(1px);
+        background: #2a2a2a;
       }
 
       .note {

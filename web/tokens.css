@@ -1,35 +1,41 @@
 /* BlunderMate Lab — shared design tokens and base reset.
    Linked by every Lab page so the palette has a single source of truth.
-   Mirrors the token system of the main blundermate.app site. */
+   Tuned to a Codex-style monochrome light palette: warm off-white paper,
+   graphite text, hairline rings instead of shadows, charcoal accents
+   instead of a bright primary hue. */
 
 :root {
   color-scheme: light;
 
-  /* Backgrounds — neutral paper */
-  --bg-base: #f7f7f8;
+  /* Backgrounds — warm neutral paper */
+  --bg-base: #faf9f7;
   --bg-surface: #ffffff;
-  --bg-elevated: #efeff1;
+  --bg-elevated: #f2f1ee;
 
   /* Text — graphite */
-  --tx: #1c1d1f;
-  --tx2: #62646a;
-  --tx3: #9a9ca3;
+  --tx: #0f0f0f;
+  --tx2: #595959;
+  --tx3: #9a9a9a;
 
-  /* Accent — ink blue */
-  --ac: #2b5bd7;
-  --ac-lo: rgba(43, 91, 215, 0.10);
+  /* Accent — charcoal. Primary actions are black-filled, not blue. */
+  --ac: #0f0f0f;
+  --ac-lo: rgba(15, 15, 15, 0.06);
 
-  /* Borders, dividers, press feedback */
-  --brd: rgba(28, 29, 31, 0.08);
-  --brd2: rgba(28, 29, 31, 0.16);
-  --list-divider: rgba(28, 29, 31, 0.06);
-  --press-fill: rgba(28, 29, 31, 0.05);
+  /* Soft sage hint for the brand wordmark only — Codex peppers a quiet
+     warm-green through its surfaces without ever shouting. */
+  --brand-accent: #2f5e54;
 
-  /* Card elevation — hairline ring instead of a hard border */
-  --card-ring: 0 1px 2px rgba(28, 29, 31, 0.04), 0 0 0 1px rgba(28, 29, 31, 0.06);
+  /* Borders, dividers, press feedback — hairlines, no heavy strokes */
+  --brd: rgba(15, 15, 15, 0.08);
+  --brd2: rgba(15, 15, 15, 0.16);
+  --list-divider: rgba(15, 15, 15, 0.06);
+  --press-fill: rgba(15, 15, 15, 0.04);
+
+  /* Card elevation — hairline ring only, no drop shadow */
+  --card-ring: 0 0 0 1px rgba(15, 15, 15, 0.07);
 
   /* Status + chess board tones */
-  --coral: #d03832;
+  --coral: #b14338;
   --light-square: #f0d9b5;
   --dark-square: #b58863;
 
@@ -47,17 +53,33 @@ body {
   color: var(--tx);
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
-/* Brand wordmark — blunder (graphite) + mate (accent), in mono */
+a {
+  color: var(--tx);
+  text-decoration: underline;
+  text-decoration-color: var(--brd2);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color 0.15s ease;
+}
+
+a:hover {
+  text-decoration-color: var(--tx);
+}
+
+/* Brand wordmark — blunder (graphite) + mate (sage), in mono */
 .brand-mark {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -71,7 +93,7 @@ select {
 }
 
 .brand-mark .m {
-  color: var(--ac);
+  color: var(--brand-accent);
 }
 
 .brand-mark .lab {

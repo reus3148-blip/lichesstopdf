@@ -7,23 +7,25 @@
     <style>
       :root {
         color-scheme: light;
-        --bg: #f5f7f6;
-        --panel: #fff;
-        --ink: #172026;
-        --muted: #60717c;
-        --line: #d4dfdf;
-        --soft: #edf4f3;
-        --teal: #176b66;
-        --teal-dark: #0f514f;
-        --red: #a23b37;
-        --gold: #9a6a16;
+        --bg: #faf9f7;
+        --panel: #ffffff;
+        --ink: #0f0f0f;
+        --muted: #595959;
+        --line: rgba(15, 15, 15, 0.10);
+        --line-strong: rgba(15, 15, 15, 0.18);
+        --soft: #f2f1ee;
+        --accent: #0f0f0f;
+        --accent-hover: #1f1f1f;
+        --red: #b14338;
+        --gold: #8a6a16;
       }
       * { box-sizing: border-box; }
       body {
         background: var(--bg);
         color: var(--ink);
-        font: 13px/1.4 Arial, "Malgun Gothic", sans-serif;
+        font: 13px/1.45 Inter, "Pretendard Variable", "Malgun Gothic", system-ui, sans-serif;
         margin: 0;
+        -webkit-font-smoothing: antialiased;
       }
       button, input, select, textarea { font: inherit; }
       h1, h2, p { margin: 0; }
@@ -37,8 +39,8 @@
         justify-content: space-between;
         padding-bottom: 8px;
       }
-      h1 { color: var(--teal); font-size: 16px; }
-      .endpoint { color: var(--muted); font-size: 11px; }
+      h1 { color: var(--ink); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+      .endpoint { color: var(--muted); font-size: 11px; font-family: 'IBM Plex Mono', ui-monospace, monospace; }
 
       .layout {
         display: grid;
@@ -49,8 +51,8 @@
       .panel {
         background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 6px;
-        padding: 10px;
+        border-radius: 8px;
+        padding: 12px;
       }
       .panel-title {
         align-items: center;
@@ -59,33 +61,38 @@
         justify-content: space-between;
         margin-bottom: 8px;
       }
-      .panel-title h2 { font-size: 13px; }
+      .panel-title h2 { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
       .pill {
         background: var(--soft);
-        border: 1px solid #c8dcda;
+        border: 1px solid var(--line);
         border-radius: 999px;
-        color: var(--teal-dark);
+        color: var(--ink);
         font-size: 11px;
-        font-weight: 700;
-        padding: 1px 7px;
+        font-weight: 600;
+        padding: 1px 8px;
       }
 
-      .field-grid { display: grid; gap: 6px; grid-template-columns: 1fr 1fr; }
-      .field { display: grid; gap: 2px; }
+      .field-grid { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+      .field { display: grid; gap: 3px; }
       .field.full { grid-column: 1 / -1; }
-      label { color: var(--muted); font-size: 11px; font-weight: 700; }
+      label { color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 0.01em; }
       input, select, textarea {
-        background: #fff;
-        border: 1px solid #c3d1d0;
-        border-radius: 4px;
+        background: var(--panel);
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
         color: var(--ink);
         min-width: 0;
-        padding: 4px 6px;
+        padding: 5px 8px;
+        transition: border-color 0.15s ease;
         width: 100%;
       }
-      input, select { height: 28px; }
+      input:focus, select:focus, textarea:focus {
+        border-color: var(--ink);
+        outline: none;
+      }
+      input, select { height: 30px; }
       textarea {
-        font: 11px/1.35 Consolas, "Cascadia Mono", monospace;
+        font: 11px/1.4 'IBM Plex Mono', Consolas, "Cascadia Mono", monospace;
         min-height: 180px;
         resize: vertical;
         white-space: pre;
@@ -93,62 +100,67 @@
 
       .theme-grid { display: flex; flex-wrap: wrap; gap: 4px; }
       .chip {
-        background: #eef4f4;
-        border: 1px solid #c8d9d8;
+        background: var(--panel);
+        border: 1px solid var(--line-strong);
         border-radius: 999px;
-        color: #24413f;
+        color: var(--ink);
         cursor: pointer;
         font-size: 11px;
-        font-weight: 700;
-        padding: 2px 7px;
+        font-weight: 500;
+        padding: 2px 9px;
+        transition: background 0.12s ease, border-color 0.12s ease;
       }
-      .chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+      .chip:hover { background: var(--soft); }
+      .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
       .checks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-      .checks label { align-items: center; color: var(--ink); display: flex; font-size: 12px; gap: 4px; }
-      .checks input { height: 14px; width: 14px; }
+      .checks label { align-items: center; color: var(--ink); display: flex; font-size: 12px; font-weight: 400; gap: 5px; }
+      .checks input { accent-color: var(--accent); height: 14px; width: 14px; }
 
-      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
       .primary, .secondary {
-        border-radius: 4px;
+        border-radius: 6px;
         cursor: pointer;
-        font-weight: 700;
+        font-weight: 500;
         font-size: 12px;
-        padding: 5px 10px;
+        padding: 6px 12px;
+        transition: background 0.15s ease, border-color 0.15s ease;
       }
-      .primary { background: var(--teal); border: 1px solid var(--teal); color: #fff; }
-      .primary:hover { background: var(--teal-dark); }
-      .secondary { background: #fff; border: 1px solid #b7c8c7; color: var(--ink); }
-      button:disabled { cursor: wait; opacity: 0.62; }
+      .primary { background: var(--accent); border: 1px solid var(--accent); color: #fff; }
+      .primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+      .secondary { background: var(--panel); border: 1px solid var(--line-strong); color: var(--ink); }
+      .secondary:hover { background: var(--soft); }
+      button:disabled { cursor: wait; opacity: 0.5; }
 
       .status {
-        border-left: 3px solid var(--teal);
+        border-left: 2px solid var(--ink);
         color: var(--muted);
         font-size: 12px;
-        margin-top: 8px;
-        padding: 4px 8px;
+        margin-top: 10px;
+        padding: 4px 10px;
       }
       .status.error { border-color: var(--red); color: var(--red); }
       .status.warn { border-color: var(--gold); color: var(--gold); }
 
       .preview-table-wrap {
         border: 1px solid var(--line);
-        border-radius: 4px;
+        border-radius: 6px;
         margin-bottom: 8px;
         max-height: 220px;
         overflow: auto;
       }
       table { border-collapse: collapse; min-width: 660px; width: 100%; }
       th, td {
-        border-bottom: 1px solid #e2e9e9;
-        padding: 4px 6px;
+        border-bottom: 1px solid var(--line);
+        padding: 5px 8px;
         text-align: left;
         vertical-align: top;
       }
       th {
-        background: #f1f5f5;
+        background: var(--soft);
         color: var(--muted);
         font-size: 11px;
+        font-weight: 500;
         position: sticky;
         top: 0;
         z-index: 1;
@@ -163,7 +175,8 @@
         padding-bottom: 4px;
       }
       .output-item:last-child { border-bottom: 0; padding-bottom: 0; }
-      .output-item a { color: var(--teal-dark); font-weight: 700; }
+      .output-item a { color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 2px; }
+      .output-item a:hover { text-decoration-color: var(--ink); }
       .muted { color: var(--muted); font-size: 11px; }
 
       @media (max-width: 1160px) {
