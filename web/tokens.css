@@ -19,7 +19,13 @@
 
   /* Accent — charcoal. Primary actions are black-filled, not blue. */
   --ac: #0f0f0f;
+  --ac-hover: #1f1f1f;
+  --ac-active: #2a2a2a;
   --ac-lo: rgba(15, 15, 15, 0.06);
+
+  /* Chess move highlight (inset ring around the last-move square) */
+  --move-ring: rgba(15, 15, 15, 0.45);
+  --move-ring-print: rgba(15, 15, 15, 0.55);
 
   /* Soft sage hint for the brand wordmark only — Codex peppers a quiet
      warm-green through its surfaces without ever shouting. */

@@ -587,32 +587,13 @@ def build_book_blocks(cards: list[MoveCard], max_run: int) -> list[BookBlock]:
     return blocks
 
 
-def format_san_run(cards: list[MoveCard]) -> str:
-    """Render a list of mainline cards as compact PGN-style text.
-
-    Collapses paired white/black plies so the move number appears once per pair:
-    "4. Ba4 Nf6 5. O-O Be7". A black ply that opens a run gets the "N..." prefix.
-    """
-    pieces: list[str] = []
-    prev_white_number: int | None = None
-    for card in cards:
-        if card.is_white_move:
-            pieces.append(f"{card.fullmove_number}. {card.san}")
-            prev_white_number = card.fullmove_number
-        else:
-            if prev_white_number == card.fullmove_number:
-                pieces.append(card.san)
-            else:
-                pieces.append(f"{card.fullmove_number}... {card.san}")
-            prev_white_number = None
-    return " ".join(pieces)
-
-
 def format_san_run_html(cards: list[MoveCard]) -> str:
-    """Same as format_san_run but wraps move numbers in <span class="mn">.
+    """Render a list of mainline cards as compact PGN-style HTML.
 
-    Bolded move numbers visually separate move pairs in dense book prose,
-    matching how printed chess books typeset notation.
+    Collapses paired white/black plies so the move number appears once per
+    pair: "4. Ba4 Nf6 5. O-O Be7". A black ply that opens a run gets the
+    "N..." prefix. Move numbers are wrapped in `<span class="mn">` so the CSS
+    can bold them and the eye finds move pairs in dense book prose.
     """
     pieces: list[str] = []
     prev_white_number: int | None = None
@@ -620,16 +601,15 @@ def format_san_run_html(cards: list[MoveCard]) -> str:
         san = text(card.san)
         if card.is_white_move:
             pieces.append(
-                f"<span class=\"mn\">{card.fullmove_number}.</span> {san}"
+                f'<span class="mn">{card.fullmove_number}.</span> {san}'
             )
             prev_white_number = card.fullmove_number
+        elif prev_white_number == card.fullmove_number:
+            pieces.append(san)
         else:
-            if prev_white_number == card.fullmove_number:
-                pieces.append(san)
-            else:
-                pieces.append(
-                    f"<span class=\"mn\">{card.fullmove_number}…</span> {san}"
-                )
+            pieces.append(
+                f'<span class="mn">{card.fullmove_number}...</span> {san}'
+            )
             prev_white_number = None
     return " ".join(pieces)
 
@@ -686,30 +666,31 @@ def render_book_html(result: StudyResult, options: StudyOptions) -> str:
         # their own row whenever a move carries a comment. The 2-column /
         # grid experiments produced empty slots and orphaned rows in
         # comment-heavy studies, so we keep things linear.
-        blocks = build_book_blocks(chapter.cards, options.book_max_run)
-        if options.skip_uncommented:
-            # When the user opted into "skip uncommented", drop every
-            # diagram without a comment (including variation diagrams,
-            # which `build_book_blocks` would otherwise always emit).
-            # SAN runs are preserved so the move flow stays readable.
-            blocks = [
-                block for block in blocks
-                if block.kind == "run" or (block.card and block.card.comment)
-            ]
-        for block in blocks:
+        skip_uncommented = options.skip_uncommented
+        for block in build_book_blocks(chapter.cards, options.book_max_run):
             if block.kind == "run":
                 body.append(f"<p class=\"book-run\">{format_san_run_html(block.cards)}</p>")
                 continue
             card = block.card
-            depth_class = f"depth-{min(card.depth, 3)}"
-            body.append(f"<figure class=\"book-diagram {depth_class}\">")
-            body.append(f"<div class=\"bd-board\">{card.svg}</div>")
-            body.append("<figcaption class=\"bd-caption\">")
-            body.append(f"<span class=\"bd-label\">{text(card.label)}</span>")
-            if card.comment:
-                body.append(f"<span class=\"bd-comment\">{text(card.comment)}</span>")
-            body.append("</figcaption>")
-            body.append("</figure>")
+            # `skip_uncommented` drops every diagram without a comment
+            # (including variation diagrams, which `build_book_blocks`
+            # would otherwise always emit). SAN runs above are preserved
+            # so the move flow stays readable.
+            if skip_uncommented and not card.comment:
+                continue
+            comment = (
+                f"<span class=\"bd-comment\">{text(card.comment)}</span>"
+                if card.comment else ""
+            )
+            body.append(
+                f"<figure class=\"book-diagram depth-{min(card.depth, 3)}\">"
+                f"<div class=\"bd-board\">{card.svg}</div>"
+                f"<figcaption class=\"bd-caption\">"
+                f"<span class=\"bd-label\">{text(card.label)}</span>"
+                f"{comment}"
+                f"</figcaption>"
+                f"</figure>"
+            )
         body.append("</section>")
 
     body.append("</body>")
@@ -733,8 +714,6 @@ def _book_style() -> str:
     margin: 0;
     max-width: 156mm;
   }
-  /* Single-column flow: SAN run prose, diagrams stacked one per row. */
-  .chapter-body > * + * { margin-top: 4mm; }
   a { color: #1f4f8f; text-decoration: none; }
   .print-bar { position: fixed; right: 12px; top: 12px; z-index: 50; }
   .print-bar button {
@@ -818,18 +797,16 @@ def _book_style() -> str:
     text-align: justify;
     text-indent: 5mm;
   }
-  .book-run .mn { font-weight: 700; white-space: nowrap; }
-  /* First paragraph after a heading or diagram follows book convention and
-     drops the indent. */
-  .chapter-intro + .book-run,
-  .chapter-body > .book-run:first-child,
-  .book-diagram + .book-run { text-indent: 0; }
-  .book-run + .book-run { margin-top: -1mm; text-indent: 5mm; }
   .book-run .mn {
     font-feature-settings: "lnum" 1;
     font-weight: 700;
     white-space: nowrap;
   }
+  /* First paragraph after a heading or diagram follows book convention and
+     drops the indent. */
+  .chapter-intro + .book-run,
+  .book-diagram + .book-run { text-indent: 0; }
+  .book-run + .book-run { margin-top: -1mm; text-indent: 5mm; }
   /* Each diagram is its own centered figure: board on top, caption below.
      Board on the left + caption on the right would let comment-heavy
      studies pack tighter, but the user prefers the single-column "show me
