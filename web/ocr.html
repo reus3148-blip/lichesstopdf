@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chess Image OCR - BlunderMate Lab</title>
+    <meta
+      name="description"
+      content="BlunderMate Lab bridge for converting 2D chessboard screenshots to FEN with a local OCR model server."
+    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
+    >
+    <link rel="stylesheet" href="/tokens.css">
+    <style>
+      .shell {
+        margin: 0 auto;
+        max-width: 1120px;
+        padding: 16px 24px 44px;
+      }
+
+      .topbar {
+        align-items: center;
+        border-bottom: 1px solid var(--brd);
+        display: flex;
+        gap: 14px;
+        justify-content: space-between;
+        padding: 4px 0 14px;
+      }
+
+      .brand-link {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .health {
+        background: var(--bg-surface);
+        border: 1px solid var(--brd);
+        border-radius: 8px;
+        color: var(--tx3);
+        font-size: 12px;
+        font-weight: 700;
+        padding: 6px 10px;
+        white-space: nowrap;
+      }
+
+      .health.ok {
+        color: var(--brand-accent);
+      }
+
+      .health.bad {
+        color: var(--coral);
+      }
+
+      .hero {
+        display: grid;
+        gap: 8px;
+        margin: 22px 0 16px;
+      }
+
+      .hero h1 {
+        font-size: clamp(26px, 5vw, 44px);
+        letter-spacing: -0.03em;
+        line-height: 0.98;
+        margin: 0;
+      }
+
+      .hero p {
+        color: var(--tx2);
+        margin: 0;
+        max-width: 680px;
+      }
+
+      .endpoint-row {
+        align-items: center;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        margin: 18px 0 14px;
+      }
+
+      .setup-card {
+        background: var(--bg-surface);
+        border-radius: 14px;
+        box-shadow: var(--card-ring);
+        display: grid;
+        gap: 12px;
+        margin: 16px 0;
+        padding: 16px;
+      }
+
+      .setup-card h2 {
+        font-size: 18px;
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+        margin: 0;
+      }
+
+      .setup-card p {
+        color: var(--tx2);
+        margin: 0;
+      }
+
+      .setup-card ol {
+        color: var(--tx2);
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .setup-card li + li {
+        margin-top: 4px;
+      }
+
+      code {
+        background: var(--bg-elevated);
+        border-radius: 5px;
+        color: var(--tx);
+        font-family: var(--font-mono);
+        font-size: 0.92em;
+        padding: 1px 5px;
+      }
+
+      .setup-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .link-button {
+        align-items: center;
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        border-radius: 8px;
+        color: var(--tx);
+        display: inline-flex;
+        font-weight: 700;
+        height: 40px;
+        padding: 0 14px;
+        text-decoration: none;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        white-space: nowrap;
+      }
+
+      .link-button:hover {
+        background: var(--bg-elevated);
+      }
+
+      .primary-link-button {
+        background: var(--ac);
+        border-color: var(--ac);
+        color: var(--bg-surface);
+      }
+
+      .primary-link-button:hover {
+        background: var(--ac-hover);
+      }
+
+      input,
+      textarea,
+      button {
+        font: inherit;
+      }
+
+      .endpoint-row input,
+      textarea {
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        border-radius: 8px;
+        color: var(--tx);
+      }
+
+      .endpoint-row input {
+        height: 40px;
+        min-width: 0;
+        padding: 7px 11px;
+      }
+
+      button {
+        background: var(--bg-surface);
+        border: 1px solid var(--brd2);
+        border-radius: 8px;
+        color: var(--tx);
+        cursor: pointer;
+        font-weight: 700;
+        height: 40px;
+        padding: 0 14px;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        white-space: nowrap;
+      }
+
+      button:hover {
+        background: var(--bg-elevated);
+      }
+
+      button:disabled {
+        cursor: wait;
+        opacity: 0.55;
+      }
+
+      .dropzone {
+        align-content: center;
+        background: var(--bg-surface);
+        border: 2px dashed var(--brd2);
+        border-radius: 14px;
+        cursor: pointer;
+        display: grid;
+        min-height: 150px;
+        padding: 24px;
+        place-items: center;
+        text-align: center;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .dropzone:hover,
+      .dropzone.dragging {
+        background: var(--bg-elevated);
+        border-color: var(--brand-accent);
+      }
+
+      .dropzone input {
+        display: none;
+      }
+
+      .drop-title {
+        display: block;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .drop-sub {
+        color: var(--tx2);
+        display: block;
+        margin-top: 8px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .status {
+        color: var(--tx2);
+        min-height: 24px;
+        margin: 14px 0;
+      }
+
+      .preview-wrap {
+        background: var(--bg-surface);
+        border: 1px solid var(--brd);
+        border-radius: 12px;
+        overflow: hidden;
+        width: min(520px, 100%);
+      }
+
+      .preview-wrap img {
+        display: block;
+        height: auto;
+        width: 100%;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .results {
+        display: grid;
+        gap: 14px;
+        scroll-margin-top: 18px;
+      }
+
+      .result-card {
+        background: var(--bg-surface);
+        border-radius: 14px;
+        box-shadow: var(--card-ring);
+        display: grid;
+        gap: 18px;
+        grid-template-columns: minmax(260px, 360px) 1fr;
+        padding: 16px;
+      }
+
+      .board-column {
+        align-content: start;
+        display: grid;
+        gap: 8px;
+      }
+
+      .board-shell {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 42%),
+          linear-gradient(180deg, #41566e, #2d3f50);
+        border-radius: 10px;
+        padding: 12px;
+      }
+
+      .board {
+        aspect-ratio: 1;
+        background: #e9eef0;
+        border: 1px solid rgba(18, 26, 34, 0.4);
+        border-radius: 6px;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        overflow: hidden;
+      }
+
+      .sq {
+        display: grid;
+        min-height: 0;
+        min-width: 0;
+        place-items: center;
+        position: relative;
+      }
+
+      .sq.light {
+        background: #e9eef0;
+      }
+
+      .sq.dark {
+        background: #7f98b2;
+      }
+
+      .piece {
+        filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.24));
+        height: 88%;
+        position: relative;
+        width: 88%;
+        z-index: 2;
+      }
+
+      .coord {
+        color: rgba(32, 39, 48, 0.55);
+        font-size: 10.5px;
+        font-weight: 800;
+        line-height: 1;
+        pointer-events: none;
+        position: absolute;
+        z-index: 3;
+      }
+
+      .dark .coord {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .coord-rank {
+        left: 5px;
+        top: 5px;
+      }
+
+      .coord-file {
+        bottom: 5px;
+        right: 5px;
+      }
+
+      .conf-dot {
+        background: var(--brand-accent);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 999px;
+        height: 8px;
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        width: 8px;
+        z-index: 4;
+      }
+
+      .conf-dot.mid {
+        background: #d4a33d;
+      }
+
+      .conf-dot.low {
+        background: var(--coral);
+      }
+
+      .conf-dot.high {
+        opacity: 0;
+      }
+
+      .board-caption {
+        color: var(--tx2);
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .result-body {
+        align-content: start;
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .result-head {
+        align-items: flex-start;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+      }
+
+      .result-head h2 {
+        font-size: 18px;
+        margin: 0;
+      }
+
+      .copy-btn {
+        min-width: 112px;
+      }
+
+      .result-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 7px;
+      }
+
+      .badge {
+        align-items: center;
+        background: var(--bg-elevated);
+        border: 1px solid var(--brd);
+        border-radius: 7px;
+        color: var(--tx2);
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 800;
+        height: 24px;
+        padding: 0 8px;
+        white-space: nowrap;
+      }
+
+      .badge.strong {
+        background: rgba(47, 94, 84, 0.1);
+        border-color: rgba(47, 94, 84, 0.25);
+        color: var(--brand-accent);
+      }
+
+      .badge.mid {
+        background: rgba(212, 163, 61, 0.12);
+        border-color: rgba(212, 163, 61, 0.35);
+        color: #8a651f;
+      }
+
+      .badge.low {
+        background: rgba(177, 67, 56, 0.1);
+        border-color: rgba(177, 67, 56, 0.25);
+        color: var(--coral);
+      }
+
+      textarea {
+        line-height: 1.45;
+        min-height: 72px;
+        padding: 10px;
+        resize: vertical;
+        width: 100%;
+      }
+
+      .metrics {
+        display: grid;
+        gap: 8px 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin: 0;
+      }
+
+      .metrics div {
+        border-bottom: 1px solid var(--list-divider);
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        padding-bottom: 6px;
+      }
+
+      dt {
+        color: var(--tx2);
+      }
+
+      dd {
+        font-weight: 700;
+        margin: 0;
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          padding: 14px 16px 32px;
+        }
+
+        .endpoint-row {
+          grid-template-columns: 1fr;
+        }
+
+        .result-card {
+          grid-template-columns: 1fr;
+        }
+
+        .metrics {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand-link" href="/">
+          <div class="brand-mark">
+            <span class="b">blunder</span><span class="m">mate</span> <span class="lab">Lab</span>
+          </div>
+        </a>
+        <span id="healthBadge" class="health">checking</span>
+      </header>
+
+      <section class="hero">
+        <h1>Chess Image OCR</h1>
+        <p>Drop a 2D board screenshot and turn it into FEN with your local OCR server.</p>
+      </section>
+
+      <section class="setup-card">
+        <h2>Local server required</h2>
+        <p>This Lab page is static. The board image is sent to a local Python OCR server running on your PC.</p>
+        <div class="setup-actions">
+          <a class="link-button primary-link-button" href="/downloads/chess-image-ocr-local-server.zip" download>Download local server</a>
+          <a class="link-button" href="https://github.com/AndrewSpano/2d-chess-ocr" target="_blank" rel="noopener noreferrer">2d-chess-ocr source</a>
+        </div>
+        <ol>
+          <li>Install the upstream <code>2d-chess-ocr</code> repo and download its finetuned model.</li>
+          <li>Unzip the local server package next to that repo, or set <code>CHESS_OCR_ROOT</code>.</li>
+          <li>Run <code>.\start.ps1</code> and keep <code>http://127.0.0.1:8765</code> open.</li>
+        </ol>
+      </section>
+
+      <div class="endpoint-row">
+        <input id="endpointInput" type="url" value="http://127.0.0.1:8765" aria-label="Local OCR server URL">
+        <button id="checkBtn" type="button">Check</button>
+        <a id="openLocalLink" href="http://127.0.0.1:8765/" target="_blank" rel="noopener noreferrer"><button type="button">Open local app</button></a>
+      </div>
+
+      <label id="dropzone" class="dropzone">
+        <input id="fileInput" type="file" accept="image/*">
+        <span class="drop-title">Choose or drop an image</span>
+        <span class="drop-sub">The OCR server should be running from D:\Workspace\chess-image-to-fen.</span>
+      </label>
+
+      <div class="actions">
+        <button id="pasteBtn" type="button">Paste image</button>
+        <button id="clearBtn" type="button">Clear</button>
+      </div>
+
+      <div id="status" class="status">Drop an image to see the detected board and FEN.</div>
+
+      <section id="previewWrap" class="preview-wrap hidden">
+        <img id="imagePreview" alt="Input image preview">
+      </section>
+
+      <section id="results" class="results"></section>
+    </div>
+
+    <template id="boardTemplate">
+      <article class="result-card">
+        <div class="board-column">
+          <div class="board-shell">
+            <div class="board"></div>
+          </div>
+          <div class="board-caption"></div>
+        </div>
+        <div class="result-body">
+          <div class="result-head">
+            <div>
+              <h2></h2>
+              <div class="result-badges"></div>
+            </div>
+            <button type="button" class="copy-btn">Copy FEN</button>
+          </div>
+          <textarea readonly></textarea>
+          <dl class="metrics"></dl>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="/ocr.js"></script>
+  </body>
+</html>

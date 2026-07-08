@@ -239,3 +239,6 @@ PDF 생성에는 Chrome 또는 Edge의 headless print 기능을 사용합니다.
 ```powershell
 --chrome-path "C:\Program Files\Google\Chrome\Application\chrome.exe"
 ```
+## Lab Route Note
+
+- `/ocr` -> `web/ocr.html` (local Chess Image OCR bridge)
