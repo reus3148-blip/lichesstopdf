@@ -128,12 +128,6 @@ function renderBoard(el, board) {
       sq.appendChild(file);
     }
 
-    if (piece && typeof pieceConfs[algebraic] === 'number') {
-      const dot = document.createElement('span');
-      dot.className = `conf-dot ${confidenceClass(pieceConfs[algebraic])}`;
-      sq.appendChild(dot);
-    }
-
     el.appendChild(sq);
   }
 }
