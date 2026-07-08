@@ -1,5 +1,6 @@
 const DEFAULT_ENDPOINT = 'http://127.0.0.1:8765';
 const ENDPOINT_KEY = 'blundermate_lab_ocr_endpoint';
+const BLUNDERMATE_IMPORT_URL = 'https://blundermate.app/';
 
 const fileInput = document.getElementById('fileInput');
 const dropzone = document.getElementById('dropzone');
@@ -149,6 +150,13 @@ function badge(text, tone = '') {
   return el;
 }
 
+function buildBlunderMateFenUrl(fen) {
+  const url = new URL(BLUNDERMATE_IMPORT_URL);
+  url.searchParams.set('fen', fen);
+  url.hash = 'input';
+  return url.toString();
+}
+
 function renderResults(data) {
   resultsEl.innerHTML = '';
   const boards = Array.isArray(data.boards) ? data.boards : [];
@@ -169,6 +177,7 @@ function renderResults(data) {
 
     node.querySelector('h2').textContent = `Board ${index + 1}`;
     node.querySelector('textarea').value = fullFen;
+    node.querySelector('.open-blundermate-btn').href = buildBlunderMateFenUrl(fullFen);
     node.querySelector('.board-caption').textContent = `Detected view: ${orientation}`;
     renderBoard(node.querySelector('.board'), board);
 
