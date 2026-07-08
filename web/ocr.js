@@ -8,6 +8,7 @@ const clearBtn = document.getElementById('clearBtn');
 const checkBtn = document.getElementById('checkBtn');
 const statusEl = document.getElementById('status');
 const resultsEl = document.getElementById('results');
+const resultsPanel = document.getElementById('resultsPanel');
 const previewWrap = document.getElementById('previewWrap');
 const imagePreview = document.getElementById('imagePreview');
 const healthBadge = document.getElementById('healthBadge');
@@ -28,6 +29,20 @@ function saveEndpoint() {
 
 function setStatus(text) {
   statusEl.textContent = text;
+}
+
+function renderEmptyState(title = 'Waiting for a board image', body = 'Drop or paste a screenshot and the detected FEN will appear here.') {
+  const empty = document.createElement('div');
+  empty.className = 'empty-result';
+
+  const strong = document.createElement('strong');
+  strong.textContent = title;
+
+  const text = document.createElement('span');
+  text.textContent = body;
+
+  empty.append(strong, text);
+  resultsEl.replaceChildren(empty);
 }
 
 function formatPct(value) {
@@ -146,6 +161,7 @@ function renderResults(data) {
 
   if (boards.length === 0) {
     setStatus(`No board found. Processed in ${data.elapsedMs ?? '-'}ms.`);
+    renderEmptyState('No board found', 'Try a cleaner crop with the whole 2D board visible.');
     return;
   }
 
@@ -185,9 +201,11 @@ function renderResults(data) {
     resultsEl.appendChild(node);
   });
 
-  requestAnimationFrame(() => {
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+  if (window.matchMedia('(max-width: 760px)').matches) {
+    requestAnimationFrame(() => {
+      resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 }
 
 async function checkHealth() {
@@ -201,7 +219,7 @@ async function checkHealth() {
   } catch {
     healthBadge.textContent = 'offline';
     healthBadge.className = 'health bad';
-    setStatus('Local OCR server is offline. Start D:\\Workspace\\chess-image-to-fen\\start.ps1 first.');
+    setStatus('Local OCR server is offline. Start the downloaded server with start.ps1 first.');
   }
 }
 
@@ -211,7 +229,7 @@ async function analyzeFile(file) {
   saveEndpoint();
   previewWrap.classList.remove('hidden');
   imagePreview.src = URL.createObjectURL(file);
-  resultsEl.innerHTML = '';
+  renderEmptyState('Reading the board', 'The OCR server is working on this screenshot.');
   setStatus('Reading the board from the image...');
   fileInput.disabled = true;
   pasteBtn.disabled = true;
@@ -275,9 +293,10 @@ clearBtn.addEventListener('click', () => {
   fileInput.value = '';
   imagePreview.removeAttribute('src');
   previewWrap.classList.add('hidden');
-  resultsEl.innerHTML = '';
+  renderEmptyState();
   setStatus('Drop an image to see the detected board and FEN.');
 });
 
 saveEndpoint();
+renderEmptyState();
 checkHealth();

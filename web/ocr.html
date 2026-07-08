@@ -22,7 +22,7 @@
     <style>
       .shell {
         margin: 0 auto;
-        max-width: 1120px;
+        max-width: 1180px;
         padding: 16px 24px 44px;
       }
 
@@ -62,7 +62,7 @@
       .hero {
         display: grid;
         gap: 8px;
-        margin: 22px 0 16px;
+        margin: 22px 0 18px;
       }
 
       .hero h1 {
@@ -78,28 +78,80 @@
         max-width: 680px;
       }
 
+      .ocr-workspace {
+        align-items: start;
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(320px, 0.9fr) minmax(460px, 1.25fr);
+      }
+
+      .control-panel,
+      .results-panel {
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .panel-card,
+      .setup-card,
+      .results-panel {
+        background: var(--bg-surface);
+        border: 1px solid var(--brd);
+        border-radius: 12px;
+      }
+
+      .panel-card {
+        padding: 14px;
+      }
+
+      .panel-head {
+        align-items: start;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .panel-kicker {
+        color: var(--tx3);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0;
+        margin: 0 0 3px;
+        text-transform: uppercase;
+      }
+
+      .panel-head h2 {
+        font-size: 17px;
+        letter-spacing: 0;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .panel-head p {
+        color: var(--tx2);
+        font-size: 13px;
+        margin: 4px 0 0;
+      }
+
       .endpoint-row {
         align-items: center;
         display: grid;
         gap: 8px;
         grid-template-columns: minmax(0, 1fr) auto auto;
-        margin: 18px 0 14px;
       }
 
       .setup-card {
-        background: var(--bg-surface);
-        border-radius: 14px;
-        box-shadow: var(--card-ring);
         display: grid;
         gap: 12px;
-        margin: 16px 0;
-        padding: 16px;
+        padding: 14px;
       }
 
       .setup-card h2 {
-        font-size: 18px;
-        letter-spacing: -0.01em;
-        line-height: 1.1;
+        font-size: 17px;
+        letter-spacing: 0;
+        line-height: 1.2;
         margin: 0;
       }
 
@@ -110,6 +162,7 @@
 
       .setup-card ol {
         color: var(--tx2);
+        font-size: 13px;
         margin: 0;
         padding-left: 20px;
       }
@@ -211,7 +264,7 @@
         border-radius: 14px;
         cursor: pointer;
         display: grid;
-        min-height: 150px;
+        min-height: 132px;
         padding: 24px;
         place-items: center;
         text-align: center;
@@ -249,8 +302,9 @@
 
       .status {
         color: var(--tx2);
+        font-size: 13px;
         min-height: 24px;
-        margin: 14px 0;
+        margin: 12px 0 0;
       }
 
       .preview-wrap {
@@ -273,18 +327,67 @@
 
       .results {
         display: grid;
+        gap: 12px;
+        scroll-margin-top: 16px;
+      }
+
+      .results-panel {
+        align-content: start;
+        min-height: 520px;
+        padding: 14px;
+      }
+
+      .results-panel-head {
+        align-items: start;
+        border-bottom: 1px solid var(--list-divider);
+        display: flex;
         gap: 14px;
-        scroll-margin-top: 18px;
+        justify-content: space-between;
+        padding-bottom: 12px;
+      }
+
+      .results-panel-head h2 {
+        font-size: 18px;
+        letter-spacing: 0;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .results-panel-head p {
+        color: var(--tx2);
+        font-size: 13px;
+        margin: 4px 0 0;
+      }
+
+      .empty-result {
+        align-content: center;
+        background:
+          linear-gradient(135deg, rgba(47, 94, 84, 0.08), transparent 42%),
+          var(--bg-elevated);
+        border: 1px dashed var(--brd2);
+        border-radius: 10px;
+        color: var(--tx2);
+        display: grid;
+        min-height: 360px;
+        padding: 24px;
+        text-align: center;
+      }
+
+      .empty-result strong {
+        color: var(--tx);
+        display: block;
+        font-size: 17px;
+        margin-bottom: 5px;
       }
 
       .result-card {
-        background: var(--bg-surface);
-        border-radius: 14px;
-        box-shadow: var(--card-ring);
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
         display: grid;
         gap: 18px;
-        grid-template-columns: minmax(260px, 360px) 1fr;
-        padding: 16px;
+        grid-template-columns: minmax(230px, 320px) minmax(0, 1fr);
+        padding: 0;
       }
 
       .board-column {
@@ -296,14 +399,14 @@
       .board-shell {
         background:
           linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 42%),
-          linear-gradient(180deg, #41566e, #2d3f50);
+          linear-gradient(180deg, #2f5e54, #223f39);
         border-radius: 10px;
-        padding: 12px;
+        padding: 10px;
       }
 
       .board {
         aspect-ratio: 1;
-        background: #e9eef0;
+        background: var(--light-square);
         border: 1px solid rgba(18, 26, 34, 0.4);
         border-radius: 6px;
         display: grid;
@@ -320,11 +423,11 @@
       }
 
       .sq.light {
-        background: #e9eef0;
+        background: var(--light-square);
       }
 
       .sq.dark {
-        background: #7f98b2;
+        background: #78927c;
       }
 
       .piece {
@@ -406,11 +509,19 @@
 
       .result-head h2 {
         font-size: 18px;
+        letter-spacing: 0;
         margin: 0;
       }
 
       .copy-btn {
+        background: var(--ac);
+        border-color: var(--ac);
+        color: var(--bg-surface);
         min-width: 112px;
+      }
+
+      .copy-btn:hover {
+        background: var(--ac-hover);
       }
 
       .result-badges {
@@ -462,7 +573,7 @@
 
       .metrics {
         display: grid;
-        gap: 8px 14px;
+        gap: 7px 14px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         margin: 0;
       }
@@ -489,8 +600,16 @@
           padding: 14px 16px 32px;
         }
 
+        .ocr-workspace {
+          grid-template-columns: 1fr;
+        }
+
         .endpoint-row {
           grid-template-columns: 1fr;
+        }
+
+        .results-panel {
+          min-height: 0;
         }
 
         .result-card {
@@ -519,44 +638,79 @@
         <p>Drop a 2D board screenshot and turn it into FEN with your local OCR server.</p>
       </section>
 
-      <section class="setup-card">
-        <h2>Local server required</h2>
-        <p>This Lab page is static. The board image is sent to a local Python OCR server running on your PC.</p>
-        <div class="setup-actions">
-          <a class="link-button primary-link-button" href="/downloads/chess-image-ocr-local-server.zip" download>Download local server</a>
-          <a class="link-button" href="https://github.com/AndrewSpano/2d-chess-ocr" target="_blank" rel="noopener noreferrer">2d-chess-ocr source</a>
+      <main class="ocr-workspace">
+        <div class="control-panel">
+          <section class="setup-card">
+            <div>
+              <p class="panel-kicker">Setup</p>
+              <h2>Local server required</h2>
+            </div>
+            <p>This Lab page is static. The board image is sent to a local Python OCR server running on your PC.</p>
+            <div class="setup-actions">
+              <a class="link-button primary-link-button" href="/downloads/chess-image-ocr-local-server.zip" download>Download local server</a>
+              <a class="link-button" href="https://github.com/AndrewSpano/2d-chess-ocr" target="_blank" rel="noopener noreferrer">2d-chess-ocr source</a>
+            </div>
+            <ol>
+              <li>Install the upstream <code>2d-chess-ocr</code> repo and download its finetuned model.</li>
+              <li>Unzip the local server package next to that repo, or set <code>CHESS_OCR_ROOT</code>.</li>
+              <li>Run <code>.\start.ps1</code> and keep <code>http://127.0.0.1:8765</code> open.</li>
+            </ol>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Server</p>
+                <h2>Local OCR endpoint</h2>
+                <p>Change this only if you run the Python server on another port.</p>
+              </div>
+            </div>
+            <div class="endpoint-row">
+              <input id="endpointInput" type="url" value="http://127.0.0.1:8765" aria-label="Local OCR server URL">
+              <button id="checkBtn" type="button">Check</button>
+              <a id="openLocalLink" class="link-button" href="http://127.0.0.1:8765/" target="_blank" rel="noopener noreferrer">Open local app</a>
+            </div>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Input</p>
+                <h2>Board screenshot</h2>
+                <p>Use a clean 2D board crop for the best FEN.</p>
+              </div>
+            </div>
+
+            <label id="dropzone" class="dropzone">
+              <input id="fileInput" type="file" accept="image/*">
+              <span class="drop-title">Choose or drop an image</span>
+              <span class="drop-sub">Keep the downloaded local server running before recognition.</span>
+            </label>
+
+            <div class="actions">
+              <button id="pasteBtn" type="button">Paste image</button>
+              <button id="clearBtn" type="button">Clear</button>
+            </div>
+
+            <div id="status" class="status">Drop an image to see the detected board and FEN.</div>
+
+            <section id="previewWrap" class="preview-wrap hidden">
+              <img id="imagePreview" alt="Input image preview">
+            </section>
+          </section>
         </div>
-        <ol>
-          <li>Install the upstream <code>2d-chess-ocr</code> repo and download its finetuned model.</li>
-          <li>Unzip the local server package next to that repo, or set <code>CHESS_OCR_ROOT</code>.</li>
-          <li>Run <code>.\start.ps1</code> and keep <code>http://127.0.0.1:8765</code> open.</li>
-        </ol>
-      </section>
 
-      <div class="endpoint-row">
-        <input id="endpointInput" type="url" value="http://127.0.0.1:8765" aria-label="Local OCR server URL">
-        <button id="checkBtn" type="button">Check</button>
-        <a id="openLocalLink" href="http://127.0.0.1:8765/" target="_blank" rel="noopener noreferrer"><button type="button">Open local app</button></a>
-      </div>
-
-      <label id="dropzone" class="dropzone">
-        <input id="fileInput" type="file" accept="image/*">
-        <span class="drop-title">Choose or drop an image</span>
-        <span class="drop-sub">The OCR server should be running from D:\Workspace\chess-image-to-fen.</span>
-      </label>
-
-      <div class="actions">
-        <button id="pasteBtn" type="button">Paste image</button>
-        <button id="clearBtn" type="button">Clear</button>
-      </div>
-
-      <div id="status" class="status">Drop an image to see the detected board and FEN.</div>
-
-      <section id="previewWrap" class="preview-wrap hidden">
-        <img id="imagePreview" alt="Input image preview">
-      </section>
-
-      <section id="results" class="results"></section>
+        <section id="resultsPanel" class="results-panel">
+          <div class="results-panel-head">
+            <div>
+              <p class="panel-kicker">Output</p>
+              <h2>Recognition result</h2>
+              <p>Detected boards, confidence, and copyable FEN stay here.</p>
+            </div>
+          </div>
+          <section id="results" class="results"></section>
+        </section>
+      </main>
     </div>
 
     <template id="boardTemplate">
